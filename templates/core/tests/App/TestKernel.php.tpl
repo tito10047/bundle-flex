@@ -14,6 +14,7 @@ $imports = $helper->imports([
     'Symfony\Bundle\FrameworkBundle\FrameworkBundle',
     'Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait',
     'Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator',
+    'Symfony\Component\HttpKernel\Bundle\Bundle',
     'Symfony\Component\HttpKernel\Kernel',
     ...($hasRoutes ? ['Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator'] : []),
     ...$bundles,
@@ -51,6 +52,12 @@ final class TestKernel extends <?= $imports->name('Symfony\Component\HttpKernel\
         parent::__construct($environment, $debug);
     }
 
+    /**
+     * The bundles are typed as Bundle: the BundleInterface of HttpKernel is deprecated since Symfony 8.1,
+     * and the interface replacing it does not exist in Symfony 7.4.
+     *
+     * @return iterable<<?= $imports->name('Symfony\Component\HttpKernel\Bundle\Bundle') ?>>
+     */
     public function registerBundles(): iterable
     {
         yield new <?= $imports->name('Symfony\Bundle\FrameworkBundle\FrameworkBundle') ?>();
