@@ -1,5 +1,6 @@
 <?php
 use Yceruto\BundleFlex\Feature\ControllersFeature;
+use Yceruto\BundleFlex\Feature\PublicAssetsFeature;
 use Yceruto\BundleFlex\Feature\TranslationsFeature;
 use Yceruto\BundleFlex\Feature\TwigFeature;
 
@@ -26,6 +27,9 @@ $css = $naming->slug.'-hello';
  # <?= TwigFeature::overrideDirectory($naming) ?>hello.html.twig file of your application,
  # or only its "title" block by extending '@!<?= $naming->twigNamespace ?>/hello.html.twig'.
  #}
+<?php if ($blueprint->hasFeature(PublicAssetsFeature::NAME)): ?>
+<link rel="stylesheet" href="{{ asset('<?= PublicAssetsFeature::stylesheetPublicPath($naming) ?>') }}">
+<?php endif ?>
 <section class="<?= $css ?>">
     <h1 class="<?= $css ?>__title">{% block title %}<?= $message(TranslationsFeature::TITLE_MESSAGE) ?>{% endblock %}</h1>
     <p class="<?= $css ?>__greeting">{{ greeting }}</p>

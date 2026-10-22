@@ -1,4 +1,5 @@
 <?php
+use Yceruto\BundleFlex\Feature\PublicAssetsFeature;
 use Yceruto\BundleFlex\Feature\TranslationsFeature;
 use Yceruto\BundleFlex\Feature\TwigFeature;
 
@@ -10,6 +11,7 @@ use Yceruto\BundleFlex\Feature\TwigFeature;
 $imports = $helper->imports([
     'Symfony\Bundle\FrameworkBundle\Test\KernelTestCase',
     'Twig\Environment',
+    ...($blueprint->hasFeature(PublicAssetsFeature::NAME) ? ['Symfony\Component\Asset\Packages'] : []),
 ], $naming->testsNamespace.'\Integration');
 $template = TwigFeature::templateName($naming);
 ?>
@@ -35,6 +37,12 @@ final class TemplateTest extends KernelTestCase
         self::assertStringContainsString('Hello Jane!', $html);
 <?php if ($blueprint->hasFeature(TranslationsFeature::NAME)): ?>
         self::assertStringContainsString(<?= $helper->php(TranslationsFeature::TITLE_MESSAGE) ?>, $html);
+<?php endif ?>
+<?php if ($blueprint->hasFeature(PublicAssetsFeature::NAME)): ?>
+        // the URL depends on the configuration of the application, e.g. versioned with AssetMapper
+        $packages = self::getContainer()->get('assets.packages');
+        self::assertInstanceOf(Packages::class, $packages);
+        self::assertStringContainsString('href="'.$packages->getUrl(<?= $helper->php(PublicAssetsFeature::stylesheetPublicPath($naming)) ?>).'"', $html);
 <?php endif ?>
     }
 
