@@ -30,6 +30,8 @@ final class Scenarios
     /** Year of the copyright notices, fixed so the snapshots do not change every year. */
     public const YEAR = 2026;
 
+    private const QUALITY_ASSURANCE = ['phpstan', 'cs-fixer', 'rector', 'ci'];
+
     /**
      * @return array<string, Scenario>
      */
@@ -40,10 +42,13 @@ final class Scenarios
             new Scenario('minimal', 'acme/minimal-bundle'),
             new Scenario('minimal-php-array', 'acme/minimal-php-array-bundle', ConfigFormat::PhpArray),
             new Scenario('minimal-yaml', 'acme/minimal-yaml-bundle', ConfigFormat::Yaml),
+            // the quality assurance features, alone and on top of the core files
+            new Scenario('ci', 'acme/ci-bundle', features: ['ci']),
+            new Scenario('quality-assurance', 'acme/quality-assurance-bundle', features: self::QUALITY_ASSURANCE),
             // every contribution point, in each configuration format
-            new Scenario('kitchen-sink-php', 'acme/php-kitchen-sink-bundle', ConfigFormat::Php, ['config', 'kitchen-sink']),
-            new Scenario('kitchen-sink-php-array', 'acme/php-array-kitchen-sink-bundle', ConfigFormat::PhpArray, ['config', 'kitchen-sink']),
-            new Scenario('kitchen-sink-yaml', 'my-vendor/yaml-kitchen-sink-bundle', ConfigFormat::Yaml, ['config', 'kitchen-sink']),
+            new Scenario('kitchen-sink-php', 'acme/php-kitchen-sink-bundle', ConfigFormat::Php, ['config', 'kitchen-sink', ...self::QUALITY_ASSURANCE]),
+            new Scenario('kitchen-sink-php-array', 'acme/php-array-kitchen-sink-bundle', ConfigFormat::PhpArray, ['config', 'kitchen-sink', ...self::QUALITY_ASSURANCE]),
+            new Scenario('kitchen-sink-yaml', 'my-vendor/yaml-kitchen-sink-bundle', ConfigFormat::Yaml, ['config', 'kitchen-sink', ...self::QUALITY_ASSURANCE]),
         ];
 
         return array_combine(array_map(static fn (Scenario $scenario): string => $scenario->name, $scenarios), $scenarios);
