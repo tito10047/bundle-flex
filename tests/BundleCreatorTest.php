@@ -17,6 +17,8 @@ use Composer\IO\BufferIO;
 use PHPUnit\Framework\TestCase;
 use Yceruto\BundleFlex\Blueprint\BundleBlueprint;
 use Yceruto\BundleFlex\BundleCreator;
+use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
+use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
 use Yceruto\BundleFlex\Contributor\CoreContributors;
 use Yceruto\BundleFlex\Feature\FeatureGroup;
 use Yceruto\BundleFlex\Feature\FeatureRegistry;
@@ -149,7 +151,8 @@ final class BundleCreatorTest extends TestCase
             $this->io,
             $this->dir,
             new BundleOptionsAsker($this->io, $features, $this->dir, $presets),
-            new BundleGenerator(CoreContributors::createDefault(), $features),
+            // the bundle class only: these tests are about the orchestration, not the generated files
+            new BundleGenerator(new CoreContributors(new PackageContributor(), new BundleClassContributor()), $features),
             $runner,
         );
     }

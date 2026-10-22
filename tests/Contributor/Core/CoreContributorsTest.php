@@ -20,6 +20,7 @@ use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
 use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
+use Yceruto\BundleFlex\Contributor\Core\TestsContributor;
 use Yceruto\BundleFlex\Contributor\CoreContributors;
 use Yceruto\BundleFlex\Options\ConfigFormat;
 use Yceruto\BundleFlex\Tests\Support\OptionsFactory;
@@ -34,6 +35,7 @@ final class CoreContributorsTest extends TestCase
             PackageContributor::class,
             BundleClassContributor::class,
             GreeterContributor::class,
+            TestsContributor::class,
             LicenseContributor::class,
         ], array_map(static fn (object $contributor): string => $contributor::class, $contributors));
 

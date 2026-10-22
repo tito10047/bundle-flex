@@ -17,6 +17,7 @@ use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
 use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
+use Yceruto\BundleFlex\Contributor\Core\TestsContributor;
 
 /**
  * Contributors of the files every bundle has, whatever the selected features.
@@ -43,6 +44,7 @@ final class CoreContributors implements \IteratorAggregate
             new PackageContributor(),
             new BundleClassContributor(),
             new GreeterContributor(),
+            new TestsContributor(),
             new LicenseContributor($year ?? (int) date('Y')),
         );
     }
