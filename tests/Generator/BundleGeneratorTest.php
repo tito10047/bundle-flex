@@ -102,7 +102,8 @@ final class BundleGeneratorTest extends TestCase
         file_put_contents($dir.'/composer.json', '{"name": "yceruto/bundle-skeleton", "minimum-stability": "stable"}');
 
         try {
-            $blueprint = BundleGenerator::createDefault()->generate(OptionsFactory::create(features: ['config' => true]), $dir);
+            $features = ['config' => true, 'phpstan' => false, 'cs-fixer' => false, 'rector' => false, 'ci' => false];
+            $blueprint = BundleGenerator::createDefault()->generate(OptionsFactory::create(features: $features), $dir);
 
             self::assertSame('acme/blog-bundle', $blueprint->naming->packageName);
             self::assertSame([
