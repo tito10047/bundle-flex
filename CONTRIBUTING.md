@@ -226,6 +226,8 @@ edit them: they contribute to slots.
 - **`Slot`** cases receive partial templates. `$slots->render(Slot::X, $indent)`
   outputs them by priority (highest first, then registration order), separated
   by a blank line and indented. Write partials without indentation.
+  `$slots->renderEach(Slot::X)` returns them one by one, for master templates
+  that lay them out themselves (e.g. numbered steps).
 - **`ListSlot`** cases receive unique strings, kept in registration order. The
   master template decides how to sort and render them.
 
@@ -236,14 +238,66 @@ edit them: they contribute to slots.
 | `Slot::BundlePrependExtension` | statements of `prependExtension(ContainerConfigurator $container, ContainerBuilder $builder)`; the method only exists when the slot is not empty | `core/src/Bundle.php.tpl` |
 | `Slot::BundleBuild` | statements of `build(ContainerBuilder $container)`, after `parent::build()`; the method only exists when the slot is not empty | `core/src/Bundle.php.tpl` |
 | `ListSlot::BundleUses` | FQCNs used by the code of the `Bundle*` partials | `core/src/Bundle.php.tpl` |
-| `Slot::ReadmeSections` | Markdown sections of `README.md`, after the installation instructions | README master template |
-| `Slot::DocsSections` | Markdown sections of `docs/index.md` | docs master template |
-| `Slot::TestKernelConfigureContainer` | statements of the test kernel's `configureContainer(ContainerConfigurator $container)` | test kernel master template |
-| `Slot::TestKernelConfigureRoutes` | statements of the test kernel's `configureRoutes(RoutingConfigurator $routes)` | test kernel master template |
-| `ListSlot::TestKernelBundles` | FQCNs of the bundles registered by the test kernel, besides FrameworkBundle and the bundle itself | test kernel master template |
-| `ListSlot::TestKernelUses` | FQCNs used by the code of the `TestKernel*` partials | test kernel master template |
-| `ListSlot::GitAttributesExportIgnore` | paths excluded from the archive, e.g. `/phpstan.dist.neon` | `.gitattributes` master template |
-| `ListSlot::GitIgnore` | `.gitignore` patterns, e.g. `/.php-cs-fixer.cache` | `.gitignore` master template |
+| `ListSlot::ReadmeBadges` | Markdown badges shown under the title of `README.md`, one per value | `core/README.md.tpl` |
+| `Slot::ReadmeInstallationSteps` | additional installation steps ("Step 3", "Step 4"...) of `README.md`, e.g. importing the routes; one partial per step, see below | `core/README.md.tpl` |
+| `Slot::ReadmeSections` | Markdown sections (`## ...`) of `README.md`, between the installation instructions and the "Documentation" section | `core/README.md.tpl` |
+| `Slot::DocsSections` | Markdown sections (`## ...`) of `docs/index.md`, after the installation section | `core/docs/index.md.tpl` |
+| `Slot::TestKernelConfigureContainer` | statements of the test kernel's `configureContainer(ContainerConfigurator $container)`, after the FrameworkBundle configuration | `core/tests/App/TestKernel.php.tpl` |
+| `Slot::TestKernelConfigureRoutes` | statements of the test kernel's `configureRoutes(RoutingConfigurator $routes)`; the method only exists when the slot is not empty | `core/tests/App/TestKernel.php.tpl` |
+| `ListSlot::TestKernelBundles` | FQCNs of the bundles registered by the test kernel, besides FrameworkBundle and the bundle itself | `core/tests/App/TestKernel.php.tpl` |
+| `ListSlot::TestKernelUses` | FQCNs used by the code of the `TestKernel*` partials | `core/tests/App/TestKernel.php.tpl` |
+| `ListSlot::GitAttributesExportIgnore` | paths excluded from the archive, e.g. `/phpstan.dist.neon` (sorted) | `core/gitattributes.tpl` |
+| `ListSlot::GitIgnore` | `.gitignore` patterns, e.g. `/.php-cs-fixer.cache` (sorted) | `core/gitignore.tpl` |
+
+Markdown slots:
+
+- A partial of `Slot::ReadmeInstallationSteps` is one step: its first line is
+  the title (plain text, without `#` nor `Step N:`), then a blank line and the
+  instructions. The README numbers the steps after "Step 2: Enable the Bundle",
+  as the [best practices](https://symfony.com/doc/current/bundles/best_practices.html#installation-instructions)
+  recommend, and tells Flex users to follow them too.
+- `README.md` stays short: installation, a short configuration example,
+  development commands and license. The usage of each feature goes to
+  `docs/index.md` (`Slot::DocsSections`).
+- Priorities of `Slot::ReadmeSections` and `Slot::DocsSections`: the
+  configuration uses `SemanticConfigFeature::DOCS_PRIORITY` (10) to come first;
+  the core "Usage" section (the greeter) has the default priority 0 and is
+  registered first, so features using priority 0 come after it.
+- The "Development" section of `README.md` lists every Composer script with its
+  description, and `composer qa` when scripts are flagged with `qa: true`: give
+  your scripts a description.
+
+Test kernel (`tests/App/TestKernel.php`, `<Bundle>\Tests\App\TestKernel`, the
+`KERNEL_CLASS` of `phpunit.dist.xml`):
+
+- it registers FrameworkBundle (with `framework.test: true`), the bundles of
+  `ListSlot::TestKernelBundles`, then the bundle;
+- its project directory is `tests/App/` and its cache and logs go to the system
+  temporary directory, so booting it never writes into the bundle, nor loads
+  the bundle files (`config/`, `templates/`, `translations/`) as application files;
+- its third constructor argument holds the configuration of extensions, applied
+  last, e.g. `new TestKernel(extensionConfigs: ['acme_blog' => ['greeting' => 'Hi']])`.
+  Each configuration gets its own cache directory. `tests/Integration/ConfigurationTest.php`
+  shows how to pass it from `KernelTestCase::bootKernel()` by overriding `createKernel()`.
+
+For example, a Twig feature registers TwigBundle and configures it:
+
+```php
+$blueprint->composer->requireDev('symfony/twig-bundle', Constraint::SYMFONY);
+$blueprint->slots->addValue(ListSlot::TestKernelBundles, 'Symfony\Bundle\TwigBundle\TwigBundle');
+$blueprint->slots->addPartial(Slot::TestKernelConfigureContainer, 'features/twig/partials/test_kernel.php.tpl');
+// features/twig/partials/test_kernel.php.tpl contains:
+// $container->extension('twig', ['strict_variables' => true]);
+```
+
+and a controllers feature imports its routes:
+
+```php
+$blueprint->slots->addPartial(Slot::TestKernelConfigureRoutes, 'features/controllers/partials/test_kernel_routes.php.tpl');
+$blueprint->slots->addPartial(Slot::ReadmeInstallationSteps, 'features/controllers/partials/readme_step.md.tpl');
+// test_kernel_routes.php.tpl: $routes->import(\dirname(__DIR__, 2).'/config/<?= $options->configFormat->getFileName('routes') ?>');
+// readme_step.md.tpl:          Import the Routes\n\nImport the routes of the bundle in ...
+```
 
 To add a slot, add a documented case to `Slot` or `ListSlot`, render it in the
 master template that owns it, and cover it in `KitchenSinkFeature`. A slot that
@@ -363,11 +417,30 @@ documented for users.
 ### Adding a file every bundle has
 
 Core contributors implement `ContributorInterface`. They are registered in
-`CoreContributors::createDefault()` and run before the features. Example: a
-`LicenseContributor` would call
-`$blueprint->addFile('core/LICENSE.tpl', 'LICENSE')`, with its template in
-`templates/core/`. If the file is a master template, render its slots there
-and document them in the table above.
+`CoreContributors::createDefault()` and run before the features, in this order:
+
+| Contributor | Files |
+|---|---|
+| `PackageContributor` | dependencies and keywords of `composer.json` |
+| `BundleClassContributor` | `src/<Bundle>.php` |
+| `GreeterContributor` | the domain example: `src/GreeterInterface.php`, `src/Greeter.php`, `src/Exception/`, `tests/GreeterTest.php`, the `<alias>.greeter` service and its interface alias |
+| `TestsContributor` | `phpunit.dist.xml`, `tests/App/TestKernel.php`, `tests/Integration/<Bundle>Test.php`, PHPUnit and FrameworkBundle as dev dependencies, the `test` script |
+| `DocumentationContributor` | `README.md`, `docs/index.md`, `CHANGELOG.md` |
+| `LicenseContributor` | `LICENSE`, from `templates/core/licenses/<SPDX id>.tpl` |
+| `RepositoryContributor` | `.editorconfig`, `.gitattributes`, `.gitignore` |
+
+Add a file the same way: `$blueprint->addFile('core/<path>.tpl', '<path>')`,
+with its template in `templates/core/`. If the file is a master template,
+render its slots there and document them in the table above. Declare the files
+that must stay out of the Composer archive in `ListSlot::GitAttributesExportIgnore`.
+
+The greeter is the service features build on: get its names from
+`GreeterContributor::serviceId()`, `::interfaceName()` and
+`::greetingParameter()`. Its greeting comes from the semantic configuration
+when the `config` feature is enabled (`GreeterContributor::isConfigurable()`),
+from the `<alias>.greeting` parameter otherwise. Private services that nothing
+uses are removed from the compiled container: the test kernel exposes the
+greeter to the tests through the public `test.<interface>` alias.
 
 ## Assistant options and environment variables
 
@@ -431,9 +504,36 @@ $ BUNDLE_FLEX_NAME=acme/blog-bundle BUNDLE_FLEX_ALL=1 BUNDLE_FLEX_CONFIG_FORMAT=
   composer create-project yceruto/bundle-skeleton /tmp/e2e/blog-bundle --no-interaction --stability=dev \
   --repository='{"type": "path", "url": "/tmp/e2e/skeleton", "options": {"symlink": false, "versions": {"yceruto/bundle-skeleton": "1.0.x-dev"}}}'
 $ cd /tmp/e2e/blog-bundle && composer validate --strict
+$ vendor/bin/phpunit
 ```
 
 `--repository` is only used to locate the skeleton. The plugin repository must
 be declared in the skeleton's `composer.json` (step 2). Use a stable version
 higher than the latest release, otherwise `prefer-stable` picks the release
 from Packagist.
+
+The `composer.json` of the generated bundle keeps the `repositories` of your
+skeleton copy: remove them before resolving its dependencies elsewhere (e.g. in
+a PHP 8.2 container with `composer update --prefer-lowest`).
+
+### The test suite of the generated bundle
+
+- `phpunit/phpunit` is required as `^11.5 || ^12.0 || ^13.0`: Composer installs
+  the latest version the PHP version supports (11.5 on PHP 8.2, 12 on PHP 8.3,
+  13 on PHP 8.4+). `phpunit.dist.xml` must stay valid for all of them, without
+  PHPUnit deprecations.
+- Deprecations: `failOnDeprecation` with `<source ignoreIndirectDeprecations="true"
+  ignoreSuppressionOfDeprecations="true">` and `trigger_deprecation` declared as
+  a `<deprecationTrigger>`. Only the deprecations caused by the code of the
+  bundle fail the tests, which is what `SYMFONY_DEPRECATIONS_HELPER=max[direct]=0`
+  did with the PHPUnit Bridge. `symfony/phpunit-bridge` is not required: with
+  PHPUnit 10 and later, deprecations are reported by PHPUnit itself, and the
+  extension of the bridge only registers the clock and DNS mocks and the
+  `DebugClassLoader`. A feature that needs them can require it.
+- Coverage: the generated code is fully covered. Keep it this way (the best
+  practices ask for 95%) when adding a feature: generate the tests of its code.
+- Check the generated bundle, not only the snapshots: create it end to end, then
+  run its tests on PHP 8.2 with `composer update --prefer-lowest` (Symfony 7.4)
+  and on the latest PHP with the latest Symfony, and run PHPStan (level max with
+  the Symfony, PHPUnit and strict rules extensions) and PHP-CS-Fixer on `src/`,
+  `tests/` and `config/`.

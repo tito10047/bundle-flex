@@ -14,6 +14,11 @@ for Symfony 7.4 LTS and 8.x. It then installs the bundle dependencies with a sin
 - [x] Derives every name from the package name: `acme/blog-bundle` gives the namespace `Acme\BlogBundle`,
       the class `AcmeBlogBundle`, the extension alias `acme_blog`, the translation domain and Twig namespace `AcmeBlog`.
 - [x] Generates the bundle class (`AbstractBundle`) and explicit service definitions, in PHP, PHP array or YAML format.
+- [x] Generates every file the best practices ask for: `README.md` with the standard installation instructions,
+      `docs/index.md`, `LICENSE` (full text of the chosen license), `CHANGELOG.md`, `.gitattributes`, `.gitignore`
+      and `.editorconfig`.
+- [x] Generates a working example (a greeter service, its interface and the exceptions of the bundle) and a
+      PHPUnit test suite with a test kernel, fully covered and failing on deprecations caused by the bundle.
 - [x] Writes a complete `composer.json` and installs the dependencies in one `composer update`.
 - [x] Runs without interaction, every answer can be preset with an environment variable.
 
