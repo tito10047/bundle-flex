@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Yceruto\BundleFlex\Contributor;
 
 use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
+use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
 
@@ -41,6 +42,7 @@ final class CoreContributors implements \IteratorAggregate
         return new self(
             new PackageContributor(),
             new BundleClassContributor(),
+            new GreeterContributor(),
             new LicenseContributor($year ?? (int) date('Y')),
         );
     }

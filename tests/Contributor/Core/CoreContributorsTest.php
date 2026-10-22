@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Yceruto\BundleFlex\Blueprint\BundleBlueprint;
 use Yceruto\BundleFlex\Blueprint\FileTemplate;
 use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
+use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
 use Yceruto\BundleFlex\Contributor\CoreContributors;
@@ -32,6 +33,7 @@ final class CoreContributorsTest extends TestCase
         self::assertSame([
             PackageContributor::class,
             BundleClassContributor::class,
+            GreeterContributor::class,
             LicenseContributor::class,
         ], array_map(static fn (object $contributor): string => $contributor::class, $contributors));
 
