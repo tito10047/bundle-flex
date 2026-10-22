@@ -456,7 +456,7 @@ The generated workflow follows the CI section of the best practices:
 |---|---|---|---|
 | `tests` | 8.2 | 7.4 | `--prefer-lowest` |
 | `tests` | 8.3 | 7.4 | |
-| `tests` | 8.4 | 8.0 | |
+| `tests` | 8.4 | 8.0 | allows the versions affected by security advisories, see below |
 | `tests` | 8.5 | 7.4 | |
 | `tests` | 8.5 | 8.1 | |
 | `tests` | 8.5 | 8.2 (dev) | allowed to fail |
@@ -470,6 +470,13 @@ Flex, and only the Composer cache is cached (`ramsey/composer-install`), never
 deprecations triggered by the bundle fail the tests (`max[direct]=0`). When
 `symfony/phpunit-bridge` is required, `SYMFONY_DEPRECATIONS_HELPER` is set
 (`max[direct]=0`, `disabled=1` for the lowest dependencies).
+
+Symfony 8.0 is no longer maintained, and every version of some of its
+components is affected by a security advisory fixed in a newer version only.
+Composer (2.9+) refuses to install such versions, so the 8.0 job, and only
+this one, runs `composer config --global audit.block-insecure false` (understood
+by Composer 2.9 and 2.10). The quality checks only run with the latest
+versions: PHPStan fails on the lowest dependencies of Symfony 7.4.
 
 To hook into them from a feature:
 
@@ -587,6 +594,7 @@ $ E2E_SKELETON_DIR=/tmp/skeleton BUNDLE_FLEX_NAME=acme/blog-bundle BUNDLE_FLEX_A
 | `E2E_PLUGIN_VERSION` | version given to the working copy; it must satisfy the skeleton's constraint (default: `1.0.0`) |
 | `E2E_SYMFONY` | Symfony versions to install, e.g. `7.4.*`, with `SYMFONY_REQUIRE` and a global Symfony Flex like the generated CI |
 | `E2E_DEPENDENCIES` | `highest` (default) or `lowest` |
+| `E2E_ALLOW_INSECURE` | `1` allows the versions affected by security advisories, e.g. for Symfony 8.0 (default: `0`) |
 | `E2E_SCRIPTS` | scripts of the bundle to run (default: `qa`, which runs the tests first) |
 | `BUNDLE_FLEX_*` | the answers, see above |
 
@@ -609,7 +617,8 @@ to its main repository by absolute path).
 
 The CI runs it for both feature presets (`BUNDLE_FLEX_ALL=0` and `1`) in each
 configuration format: on PHP 8.2 with Symfony 7.4 and the lowest dependencies
-(`test`), and on PHP 8.5 with Symfony 8.1 (`qa`). The skeleton repository
+(`test`), and on PHP 8.5 with Symfony 8.1 (`qa`); and once on PHP 8.3 with
+Symfony 7.4 and on PHP 8.4 with Symfony 8.0 (`test`). The skeleton repository
 and branch can be changed with the `workflow_dispatch` inputs or the
 `SKELETON_REPOSITORY` and `SKELETON_REF` repository variables.
 

@@ -19,6 +19,9 @@
 #   E2E_SYMFONY              Symfony versions to install, e.g. "7.4.*" (SYMFONY_REQUIRE with
 #                            Symfony Flex, as in the generated CI); default: the latest ones
 #   E2E_DEPENDENCIES         "highest" (default) or "lowest" (composer update --prefer-lowest)
+#   E2E_ALLOW_INSECURE       "1" allows the versions affected by security advisories when installing the
+#                            dependencies (Composer's audit.block-insecure), e.g. for Symfony 8.0, which is
+#                            no longer maintained; like the Symfony 8.0 job of the generated CI
 #   E2E_SCRIPTS              Composer scripts of the bundle to run, in order (default: "qa", which runs
 #                            the tests first); a missing script fails the run
 #
@@ -43,6 +46,7 @@ skeleton_ref=${E2E_SKELETON_REF:-feat/symfony-8}
 plugin_version=${E2E_PLUGIN_VERSION:-1.0.0}
 symfony=${E2E_SYMFONY:-}
 dependencies=${E2E_DEPENDENCIES:-highest}
+allow_insecure=${E2E_ALLOW_INSECURE:-0}
 read -r -a scripts <<< "${E2E_SCRIPTS-qa}"
 
 fail() {
@@ -59,6 +63,7 @@ endgroup() {
 }
 
 [[ $dependencies == highest || $dependencies == lowest ]] || fail "E2E_DEPENDENCIES must be \"highest\" or \"lowest\", got \"$dependencies\""
+[[ $allow_insecure == 0 || $allow_insecure == 1 ]] || fail "E2E_ALLOW_INSECURE must be \"0\" or \"1\", got \"$allow_insecure\""
 [[ -e $target_dir ]] && fail "$target_dir already exists"
 
 work_dir=$(mktemp -d)
@@ -140,11 +145,15 @@ composer dump-autoload --optimize --strict-psr
 find . -path ./vendor -prune -o -name '*.php' -type f -print0 | xargs -0 -r -n1 php -l > /dev/null
 endgroup
 
-if [[ -n $symfony || $dependencies == lowest ]]; then
+if [[ -n $symfony || $dependencies == lowest || $allow_insecure == 1 ]]; then
     group "Install the ${dependencies} dependencies${symfony:+ with Symfony $symfony}"
     # exactly as the generated CI workflow, see https://symfony.com/doc/current/bundles/best_practices.html
     composer global config --no-plugins allow-plugins.symfony/flex true
     composer global require --no-progress --no-scripts --no-plugins symfony/flex
+    if [[ $allow_insecure == 1 ]]; then
+        # in the temporary COMPOSER_HOME, so for this run only
+        composer config --global audit.block-insecure false
+    fi
     options=(--prefer-dist --no-progress --no-interaction)
     if [[ $dependencies == lowest ]]; then options+=(--prefer-lowest --prefer-stable); fi
     if [[ -n $symfony ]]; then export SYMFONY_REQUIRE=$symfony; fi

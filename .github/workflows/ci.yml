@@ -124,6 +124,25 @@ jobs:
             all-features: '0'
           - preset: all
             all-features: '1'
+          # the other supported PHP and Symfony versions, once
+          - preset: all
+            all-features: '1'
+            config-format: yaml
+            php: '8.3'
+            symfony: '7.4.*'
+            dependencies: highest
+            scripts: test
+          # Symfony 8.0 is no longer maintained: its versions are affected by security advisories that are
+          # only fixed in newer versions, so Composer refuses to install them. The bundle still supports
+          # Symfony 8.0, so this job, and only this one, allows them (as the generated CI does).
+          - preset: all
+            all-features: '1'
+            config-format: php
+            php: '8.4'
+            symfony: '8.0.*'
+            dependencies: highest
+            scripts: test
+            allow-insecure: '1'
     steps:
       - name: Checkout the plugin
         uses: actions/checkout@v7
@@ -164,6 +183,7 @@ jobs:
           E2E_SYMFONY: ${{ matrix.symfony }}
           E2E_DEPENDENCIES: ${{ matrix.dependencies }}
           E2E_SCRIPTS: ${{ matrix.scripts }}
+          E2E_ALLOW_INSECURE: ${{ matrix.allow-insecure || '0' }}
           BUNDLE_FLEX_NAME: acme/blog-bundle
           BUNDLE_FLEX_AUTHOR_NAME: Jane Doe
           BUNDLE_FLEX_AUTHOR_EMAIL: jane@example.com

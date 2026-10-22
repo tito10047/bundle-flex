@@ -49,8 +49,12 @@ jobs:
             dependencies: lowest
           - php: '8.3'
             symfony: '7.4.*'
+          # Symfony 8.0 is no longer maintained: its versions are affected by security advisories that are
+          # only fixed in newer versions, so Composer refuses to install them. The bundle still supports
+          # Symfony 8.0 (^8.0), so this job, and only this one, allows them.
           - php: '8.4'
             symfony: '8.0.*'
+            allow-insecure: true
           - php: '8.5'
             symfony: '7.4.*'
           - php: '8.5'
@@ -98,6 +102,10 @@ jobs:
         run: |
           composer config minimum-stability dev
           composer config prefer-stable true
+
+      - name: Allow the versions affected by security advisories
+        if: matrix.allow-insecure
+        run: composer config --global audit.block-insecure false
 
       # caches the downloaded packages (Composer cache directory), never vendor/
       - name: Install dependencies
