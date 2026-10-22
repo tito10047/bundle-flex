@@ -60,22 +60,53 @@ final class SlotsTest extends TestCase
 
     /**
      * A slot that no master template renders is a bug: contributions to it would be silently lost.
+     *
+     * Core templates render the slots every bundle has. A slot owned by a feature (e.g. the
+     * PHPStan or CI slots) is rendered by the templates of that feature only: its documentation
+     * must say so ("when the "<feature>" feature is enabled"), so contributors know it is
+     * conditional, and templates/features/<feature>/ must render it.
      */
-    public function testEverySlotIsRenderedByATemplate(): void
+    public function testEverySlotIsRenderedByAMasterTemplate(): void
+    {
+        foreach (Slot::cases() as $slot) {
+            self::assertSlotIsRendered($slot, '/\$slots->(render|renderEach)\(Slot::'.$slot->name.'\b/');
+        }
+        foreach (ListSlot::cases() as $slot) {
+            self::assertSlotIsRendered($slot, '/\$slots->values\(ListSlot::'.$slot->name.'\)/');
+        }
+    }
+
+    private static function assertSlotIsRendered(Slot|ListSlot $slot, string $pattern): void
+    {
+        $name = $slot::class.'::'.$slot->name;
+        $docComment = (string) (new \ReflectionEnumBackedCase($slot::class, $slot->name))->getDocComment();
+        $owner = 1 === preg_match('/when the "([a-z][a-z0-9-]*)" feature is enabled/', $docComment, $matches) ? $matches[1] : null;
+
+        if (null === $owner) {
+            self::assertMatchesRegularExpression($pattern, self::readTemplates('core'), $name.' must be rendered by a core template.');
+
+            return;
+        }
+
+        self::assertDirectoryExists(self::templatesDir().'/features/'.$owner, $name.' is owned by an unknown feature.');
+        self::assertMatchesRegularExpression($pattern, self::readTemplates('features/'.$owner), $name.' must be rendered by the templates of the "'.$owner.'" feature.');
+    }
+
+    private static function readTemplates(string $directory): string
     {
         $templates = '';
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(\dirname(__DIR__, 2).'/templates', \FilesystemIterator::SKIP_DOTS));
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(self::templatesDir().'/'.$directory, \FilesystemIterator::SKIP_DOTS));
         foreach ($iterator as $file) {
             if ($file instanceof \SplFileInfo && $file->isFile()) {
                 $templates .= file_get_contents($file->getPathname());
             }
         }
 
-        foreach (Slot::cases() as $slot) {
-            self::assertMatchesRegularExpression('/\$slots->(render|renderEach)\(Slot::'.$slot->name.'\b/', $templates, $slot->name);
-        }
-        foreach (ListSlot::cases() as $slot) {
-            self::assertMatchesRegularExpression('/\$slots->values\(ListSlot::'.$slot->name.'\)/', $templates, $slot->name);
-        }
+        return $templates;
+    }
+
+    private static function templatesDir(): string
+    {
+        return \dirname(__DIR__, 2).'/templates';
     }
 }

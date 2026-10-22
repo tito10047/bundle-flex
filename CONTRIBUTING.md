@@ -316,7 +316,11 @@ $blueprint->slots->addPartial(Slot::ReadmeInstallationSteps, 'features/controlle
 
 To add a slot, add a documented case to `Slot` or `ListSlot`, render it in the
 master template that owns it, and cover it in `KitchenSinkFeature`. A slot that
-nothing renders is a bug.
+nothing renders is a bug: `SlotsTest` checks that a core template renders every
+slot, except the slots owned by a feature (the PHPStan and CI slots). Those are
+documented as rendered "when the "<feature>" feature is enabled", and the test
+checks that the templates of that feature (`templates/features/<feature>/`)
+render them.
 
 ## Features
 
