@@ -112,17 +112,20 @@ final class TemplateHelper
 
     /**
      * Encodes a service argument for the given format: service('id')/param('name') helpers
-     * in PHP formats, "@id"/"%name%" strings in YAML.
+     * in the fluent PHP format, "@id"/"%name%" strings in the YAML-shaped formats (YAML and PHP array).
+     *
+     * The PHP array format does not use the helpers: they are functions declared in the file of
+     * ContainerConfigurator, which static analysis cannot autoload.
      */
     public function serviceArgument(ServiceArgument $argument, ConfigFormat $format): string
     {
         return match ($argument->type) {
-            ArgumentType::Service => ConfigFormat::Yaml === $format
-                ? $this->yaml('@'.$argument->getReference())
-                : 'service('.$this->php($argument->getReference()).')',
-            ArgumentType::Parameter => ConfigFormat::Yaml === $format
-                ? $this->yaml('%'.$argument->getReference().'%')
-                : 'param('.$this->php($argument->getReference()).')',
+            ArgumentType::Service => ConfigFormat::Php === $format
+                ? 'service('.$this->php($argument->getReference()).')'
+                : $this->encode('@'.$argument->getReference(), $format),
+            ArgumentType::Parameter => ConfigFormat::Php === $format
+                ? 'param('.$this->php($argument->getReference()).')'
+                : $this->encode('%'.$argument->getReference().'%', $format),
             ArgumentType::Value => $this->configValue($argument->value, $format),
         };
     }
@@ -146,6 +149,11 @@ final class TemplateHelper
     public function imports(iterable $classes, ?string $namespace = null, iterable $functions = []): PhpImports
     {
         return new PhpImports($classes, $namespace, $functions);
+    }
+
+    private function encode(string $value, ConfigFormat $format): string
+    {
+        return ConfigFormat::Yaml === $format ? $this->yaml($value) : $this->php($value);
     }
 
     private function phpScalar(string|int|float|bool|null $value): string

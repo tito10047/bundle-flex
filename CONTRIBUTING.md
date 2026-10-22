@@ -210,7 +210,7 @@ controls how services and routes are written. The semantic configuration
 | Format | Files | Notes |
 |---|---|---|
 | `php` (default) | `services.php`, `routes.php` | `static function (ContainerConfigurator\|RoutingConfigurator ...)`, `service()`/`param()` helpers, no `$this` |
-| `php-array` | `services.php`, `routes.php` | returns a YAML-shaped array (Symfony 7.4+, [symfony/symfony#61894](https://github.com/symfony/symfony/pull/61894)) |
+| `php-array` | `services.php`, `routes.php` | returns a YAML-shaped array (Symfony 7.4+, [symfony/symfony#61894](https://github.com/symfony/symfony/pull/61894)), with `'@id'` and `'%name%'` references like YAML: the `service()`/`param()` functions cannot be autoloaded by static analysis |
 | `yaml` | `services.yaml`, `routes.yaml` | requires `symfony/yaml` |
 
 Use `$options->configFormat->getFileName('services')` to get the file name

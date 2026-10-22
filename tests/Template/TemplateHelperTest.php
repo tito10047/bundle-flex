@@ -122,9 +122,10 @@ final class TemplateHelperTest extends TestCase
     public static function provideServiceArguments(): iterable
     {
         yield 'php service' => [ServiceArgument::service('acme.foo'), ConfigFormat::Php, "service('acme.foo')"];
-        yield 'php-array service' => [ServiceArgument::service('acme.foo'), ConfigFormat::PhpArray, "service('acme.foo')"];
+        yield 'php-array service' => [ServiceArgument::service('acme.foo'), ConfigFormat::PhpArray, "'@acme.foo'"];
         yield 'yaml service' => [ServiceArgument::service('acme.foo'), ConfigFormat::Yaml, "'@acme.foo'"];
         yield 'php parameter' => [ServiceArgument::parameter('acme.bar'), ConfigFormat::Php, "param('acme.bar')"];
+        yield 'php-array parameter' => [ServiceArgument::parameter('acme.bar'), ConfigFormat::PhpArray, "'%acme.bar%'"];
         yield 'yaml parameter' => [ServiceArgument::parameter('acme.bar'), ConfigFormat::Yaml, "'%acme.bar%'"];
         yield 'php-array value' => [ServiceArgument::value('@x'), ConfigFormat::PhpArray, "'@@x'"];
         yield 'yaml list value' => [ServiceArgument::value([1, 2]), ConfigFormat::Yaml, '[1, 2]'];

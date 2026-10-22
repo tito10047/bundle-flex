@@ -1,6 +1,4 @@
 <?php
-use Yceruto\BundleFlex\Blueprint\ArgumentType;
-
 /**
  * @var Yceruto\BundleFlex\Blueprint\BundleBlueprint $blueprint
  * @var Yceruto\BundleFlex\Naming\BundleNaming       $naming
@@ -9,14 +7,7 @@ use Yceruto\BundleFlex\Blueprint\ArgumentType;
  */
 $format = $options->configFormat;
 $config = $blueprint->services;
-$functions = [];
-if ($config->hasArgumentOfType(ArgumentType::Parameter)) {
-    $functions[] = 'Symfony\Component\DependencyInjection\Loader\Configurator\param';
-}
-if ($config->hasArgumentOfType(ArgumentType::Service)) {
-    $functions[] = 'Symfony\Component\DependencyInjection\Loader\Configurator\service';
-}
-$imports = $helper->imports($config->getReferencedClasses(), null, $functions);
+$imports = $helper->imports($config->getReferencedClasses());
 ?>
 <?= "<?php\n" ?>
 
@@ -46,7 +37,7 @@ return [
 <?php if ([] === $config->getServices() && [] === $config->getAliases()): ?>
         // '<?= $naming->alias ?>.some_service' => [
         //     'class' => SomeService::class,
-        //     'arguments' => [service('<?= $naming->alias ?>.other_service')],
+        //     'arguments' => ['@<?= $naming->alias ?>.other_service'],
         // ],
 <?php endif ?>
 <?php foreach ($config->getServices() as $service): ?>
