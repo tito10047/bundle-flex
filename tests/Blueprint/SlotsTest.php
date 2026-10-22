@@ -57,4 +57,25 @@ final class SlotsTest extends TestCase
 
         (new Slots())->addValue(ListSlot::GitIgnore, '');
     }
+
+    /**
+     * A slot that no master template renders is a bug: contributions to it would be silently lost.
+     */
+    public function testEverySlotIsRenderedByACoreTemplate(): void
+    {
+        $templates = '';
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(\dirname(__DIR__, 2).'/templates/core', \FilesystemIterator::SKIP_DOTS));
+        foreach ($iterator as $file) {
+            if ($file instanceof \SplFileInfo && $file->isFile()) {
+                $templates .= file_get_contents($file->getPathname());
+            }
+        }
+
+        foreach (Slot::cases() as $slot) {
+            self::assertMatchesRegularExpression('/\$slots->(render|renderEach)\(Slot::'.$slot->name.'\b/', $templates, $slot->name);
+        }
+        foreach (ListSlot::cases() as $slot) {
+            self::assertMatchesRegularExpression('/\$slots->values\(ListSlot::'.$slot->name.'\)/', $templates, $slot->name);
+        }
+    }
 }

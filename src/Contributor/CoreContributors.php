@@ -18,6 +18,7 @@ use Yceruto\BundleFlex\Contributor\Core\DocumentationContributor;
 use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
+use Yceruto\BundleFlex\Contributor\Core\RepositoryContributor;
 use Yceruto\BundleFlex\Contributor\Core\TestsContributor;
 
 /**
@@ -48,6 +49,7 @@ final class CoreContributors implements \IteratorAggregate
             new TestsContributor(),
             new DocumentationContributor(),
             new LicenseContributor($year ?? (int) date('Y')),
+            new RepositoryContributor(),
         );
     }
 

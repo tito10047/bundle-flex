@@ -21,6 +21,7 @@ use Yceruto\BundleFlex\Contributor\Core\DocumentationContributor;
 use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
+use Yceruto\BundleFlex\Contributor\Core\RepositoryContributor;
 use Yceruto\BundleFlex\Contributor\Core\TestsContributor;
 use Yceruto\BundleFlex\Contributor\CoreContributors;
 use Yceruto\BundleFlex\Options\ConfigFormat;
@@ -39,6 +40,7 @@ final class CoreContributorsTest extends TestCase
             TestsContributor::class,
             DocumentationContributor::class,
             LicenseContributor::class,
+            RepositoryContributor::class,
         ], array_map(static fn (object $contributor): string => $contributor::class, $contributors));
 
         self::assertSame(['year' => 2030], self::renderLicenseParameters(CoreContributors::createDefault(2030)));
