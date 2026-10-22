@@ -19,7 +19,8 @@ for Symfony 7.4 LTS and 8.x. It then installs the bundle dependencies with a sin
       and `.editorconfig`.
 - [x] Generates a working example (a greeter service, its interface and the exceptions of the bundle) and a
       PHPUnit test suite with a test kernel, fully covered and failing on deprecations caused by the bundle.
-- [x] Optional backend features, each with its tests and documentation: an invokable console command loaded lazily,
+- [x] Optional features, each with its tests and documentation, working alone or together: a controller with its
+      Twig template, translations, public assets and a Stimulus controller, an invokable console command loaded lazily,
       a `kernel.response` event listener, and a Doctrine ORM entity mapped in XML, registered when DoctrineBundle is enabled.
 - [x] Writes a complete `composer.json` and installs the dependencies in one `composer update`.
 - [x] Runs without interaction, every answer can be preset with an environment variable.
@@ -34,6 +35,9 @@ Each feature is a question of the assistant, and a `BUNDLE_FLEX_<FEATURE>` envir
 | Controller | `BUNDLE_FLEX_CONTROLLERS` | no | an invokable controller, its route (`config/routes.*`, imported by applications) and its functional test |
 | Twig template | `BUNDLE_FLEX_TWIG` | yes with a controller | `templates/hello.html.twig` (`@AcmeBlog` namespace, no layout), rendered by the controller |
 | Translations | `BUNDLE_FLEX_TRANSLATIONS` | no | `translations/AcmeBlog.en.xlf`, in the domain of the bundle, used by the template |
+| Console command | `BUNDLE_FLEX_COMMAND` | no | an invokable command (`acme-blog:hello`), loaded lazily, and its tests |
+| Event listener | `BUNDLE_FLEX_EVENT_LISTENER` | no | a `kernel.response` listener adding a greeting header, and its tests |
+| Doctrine entity | `BUNDLE_FLEX_DOCTRINE` | no | an entity mapped in XML (`config/doctrine/`), registered when the application uses DoctrineBundle, and its tests on SQLite |
 | Public assets | `BUNDLE_FLEX_PUBLIC_ASSETS` | no | a stylesheet in `public/`, installed with `assets:install` and linked by the template |
 | Symfony UX | `BUNDLE_FLEX_UX` | no | a Stimulus controller (`assets/package.json`, `assets/src/`) exposed to AssetMapper, used by the template |
 | PHPStan | `BUNDLE_FLEX_PHPSTAN` | yes | `phpstan.dist.neon` (level max, strict, deprecation, Symfony and PHPUnit rules) |
