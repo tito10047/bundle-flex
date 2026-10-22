@@ -136,9 +136,14 @@ template with a `/** @var ... */` block that lists the variables it uses.
   `$imports = $helper->imports($classes, $namespace, $functions)`, then use
   `$imports->render()` and `$imports->name($fqcn)`. Imports are sorted like
   PHP-CS-Fixer's `ordered_imports` and short-name conflicts are handled.
-- Generated code must be valid on PHP 8.2 and clean for PHP-CS-Fixer
-  (`@Symfony`, `@Symfony:risky`, `@PHP82Migration`). Put file-level comments in
-  `/* */`, not `/** */` (`phpdoc_to_comment`).
+- Generated code must be valid on PHP 8.2 and clean for the generated
+  PHP-CS-Fixer configuration (`@Symfony`, `@Symfony:risky`, `@PHP8x2Migration`,
+  `@PHP8x2Migration:risky`, the PHPUnit migration set). `GeneratedBundleTest`
+  checks every snapshot with it. Put file-level comments in `/* */`, not `/** */`
+  (`phpdoc_to_comment`).
+- Generated code must also pass PHPStan (level max, strict and deprecation
+  rules) and Rector without changes, on Symfony 7.4 and 8.x. The end-to-end
+  tests check it (see below).
 
 ## The contract: `BundleBlueprint`
 
@@ -151,6 +156,7 @@ exceptions.
 $blueprint->addFile(string $template, string $destination, array $parameters = []);
 $blueprint->addEmptyDirectory(string $path);                 // adds <path>/.gitkeep
 $blueprint->hasFile(string $destination): bool;
+$blueprint->hasDirectory(string $path): bool;                // a contributed file is inside, e.g. "tests"
 $blueprint->hasFeature(string $name): bool;                  // shortcut for $blueprint->options->hasFeature()
 
 // composer.json (Blueprint\ComposerManifest)
@@ -160,6 +166,8 @@ $blueprint->composer->addKeyword(string $keyword);
 $blueprint->composer->addScript(string $name, string|array $commands, ?string $description = null, bool $qa = false);
 $blueprint->composer->allowPlugin(string $package);
 $blueprint->composer->runScriptAfterInstall(string $script);            // e.g. "cs:fix"
+$blueprint->composer->getConstraint(string $package): ?string;          // null when not required
+$blueprint->composer->hasScript(string $name): bool;
 
 // config/services.{php,yaml} (Blueprint\ServiceConfiguration)
 $blueprint->services->setParameter(string $name, scalar|list|null $value);  // "<alias>.<name>"
@@ -186,6 +194,9 @@ Rules:
 - **Scripts.** Scripts with `qa: true` are aggregated, in registration order,
   into a `qa` script (the name `qa` is reserved). `runScriptAfterInstall()` runs a
   defined script after the update; a failure is only reported as a warning.
+  `ComposerManifest::TEST_SCRIPT` (`test`) runs the test suite: the generated CI
+  runs it on every PHP and Symfony version, and every other `qa` script in its
+  "Quality assurance" job.
 - **Services.** Services are defined explicitly: no autowiring, no
   autoconfiguration, private unless `public: true`. Ids must be
   `<alias>.<name>`, or `.<alias>.<name>` for internal services. Aliases are
@@ -248,6 +259,10 @@ edit them: they contribute to slots.
 | `ListSlot::TestKernelUses` | FQCNs used by the code of the `TestKernel*` partials | `core/tests/App/TestKernel.php.tpl` |
 | `ListSlot::GitAttributesExportIgnore` | paths excluded from the archive, e.g. `/phpstan.dist.neon` (sorted) | `core/gitattributes.tpl` |
 | `ListSlot::GitIgnore` | `.gitignore` patterns, e.g. `/.php-cs-fixer.cache` (sorted) | `core/gitignore.tpl` |
+| `Slot::PhpStanParameters` | entries of the `parameters` section of `phpstan.dist.neon`, e.g. the configuration of a PHPStan extension | `features/phpstan/phpstan.dist.neon.tpl` |
+| `ListSlot::CiPhpExtensions` | PHP extensions installed in every job of the CI workflow, e.g. `pdo_sqlite` | `features/ci/.github/workflows/ci.yml.tpl` |
+| `Slot::CiTestServices` | service containers of the `tests` and `coverage` jobs (entries of `services:`), e.g. a database | `features/ci/.github/workflows/ci.yml.tpl` |
+| `Slot::CiTestSteps` | steps (YAML list items) run before the tests in the `tests` and `coverage` jobs | `features/ci/.github/workflows/ci.yml.tpl` |
 
 Markdown slots:
 
@@ -346,10 +361,10 @@ documented for users.
 | `doctrine` | Features | no | `BUNDLE_FLEX_DOCTRINE` |
 | `public-assets` | Features | no | `BUNDLE_FLEX_PUBLIC_ASSETS` |
 | `ux` | Features | no | `BUNDLE_FLEX_UX` |
-| `phpstan` | QualityAssurance | yes | `BUNDLE_FLEX_PHPSTAN` |
-| `cs-fixer` | QualityAssurance | yes | `BUNDLE_FLEX_CS_FIXER` |
-| `rector` | QualityAssurance | yes | `BUNDLE_FLEX_RECTOR` |
-| `ci` | QualityAssurance | yes | `BUNDLE_FLEX_CI` |
+| `phpstan` (implemented, `PhpStanFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_PHPSTAN` |
+| `cs-fixer` (implemented, `PhpCsFixerFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_CS_FIXER` |
+| `rector` (implemented, `RectorFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_RECTOR` |
+| `ci` (implemented, `GitHubActionsFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_CI` |
 
 ### Worked example: adding a console command feature
 
@@ -414,6 +429,62 @@ documented for users.
      and checks that the services and routes load in a real container in every
      format.
 
+### Quality assurance features
+
+The quality assurance features are registered last. They read the blueprint
+to adapt to everything contributed before them, so features rarely have to
+know about them.
+
+| Feature | Generates | Scripts | Adapts to |
+|---|---|---|---|
+| `phpstan` | `phpstan.dist.neon`: level `max`, `config/`, `src/`, `tests/` (when it has files); Symfony, PHPUnit, strict and deprecation rules registered by `phpstan/extension-installer` | `phpstan` (qa) | PHPUnit (`phpstan-phpunit`) |
+| `cs-fixer` | `.php-cs-fixer.dist.php`: `@Symfony`, `@Symfony:risky`, `@PHP8x2Migration(:risky)`, the PHPUnit migration set of the lowest supported PHPUnit, `declare_strict_types`; every PHP file but `vendor/` | `cs` (qa), `cs:fix` (run after install) | PHPUnit version |
+| `rector` | `rector.php`: PHP sets from `require.php`, Composer-based sets, `deadCode`, `codeQuality`, `typeDeclarations`, `privatization`, `instanceOf`, `earlyReturn` (+ `phpunitCodeQuality`) | `rector` (qa), `rector:fix` | Twig, Doctrine, PHPUnit packages |
+| `ci` | `.github/workflows/ci.yml`, `.github/dependabot.yml`, a README badge | | `test` and `qa` scripts, PHPUnit, `symfony/phpunit-bridge` |
+
+Rector (2.6.4+) applies the Composer-based sets (Symfony, PHPUnit...) for the
+lowest version allowed by `composer.json`, because the bundle is a library: the
+suggested changes never break a supported version.
+
+The generated workflow follows the CI section of the best practices:
+
+| Job | PHP | Symfony | |
+|---|---|---|---|
+| `tests` | 8.2 | 7.4 | `--prefer-lowest` |
+| `tests` | 8.3 | 7.4 | |
+| `tests` | 8.4 | 8.0 | |
+| `tests` | 8.5 | 7.4 | |
+| `tests` | 8.5 | 8.1 | |
+| `tests` | 8.5 | 8.2 (dev) | allowed to fail |
+| `qa` | 8.5 | latest | `composer validate --strict`, then every `qa` script but `test` |
+| `coverage` | 8.5 | latest | PCOV, Clover report as an artifact, fails under 95% of lines (`MIN_COVERAGE`) |
+
+Symfony versions are selected with `SYMFONY_REQUIRE` and a global Symfony
+Flex, and only the Composer cache is cached (`ramsey/composer-install`), never
+`vendor/`. With PHPUnit's native deprecation handling, configure
+`<source ignoreIndirectDeprecations="true">` in `phpunit.dist.xml`: only
+deprecations triggered by the bundle fail the tests (`max[direct]=0`). When
+`symfony/phpunit-bridge` is required, `SYMFONY_DEPRECATIONS_HELPER` is set
+(`max[direct]=0`, `disabled=1` for the lowest dependencies).
+
+To hook into them from a feature:
+
+- **PHPStan extension**: require it when the `phpstan` feature is enabled; the
+  extension installer registers it. Configure it with `Slot::PhpStanParameters`.
+
+  ```php
+  if ($blueprint->hasFeature(PhpStanFeature::NAME)) {
+      $blueprint->composer->requireDev('phpstan/phpstan-doctrine', '^2.0');
+      $blueprint->slots->addPartial(Slot::PhpStanParameters, 'features/doctrine/partials/phpstan.neon.tpl');
+  }
+  ```
+
+- **CI**: a quality check is a Composer script with `qa: true`, the workflow
+  runs it. The tests get their PHP extensions from `ListSlot::CiPhpExtensions`,
+  their service containers from `Slot::CiTestServices` and their setup steps
+  from `Slot::CiTestSteps`. These slots are only rendered when the `ci` feature
+  is enabled, so they need no check.
+
 ### Adding a file every bundle has
 
 Core contributors implement `ContributorInterface`. They are registered in
@@ -468,7 +539,9 @@ Booleans accept `1`, `true`, `yes`, `y`, `on` and `0`, `false`, `no`, `n`, `off`
 |---|---|
 | Unit tests | one test class per class, in the mirrored namespace |
 | Snapshots | `tests/Fixtures/<scenario>/` holds the full expected output of each scenario in `tests/Snapshot/Scenarios.php` |
-| Working output | `GeneratedBundleTest` checks the snapshots: `php -l`, YAML syntax, `composer.json` validation, and container and router loading compared to the blueprint |
+| Working output | `GeneratedBundleTest` checks the snapshots: `php -l`, YAML syntax, `composer.json` validation, coding standards (the generated PHP-CS-Fixer configuration), and container and router loading compared to the blueprint |
+| Generated workflows | the CI lints them with [actionlint](https://github.com/rhysd/actionlint) (`tests/Fixtures/*/.github/workflows/`) |
+| End to end | `tests/e2e/run.sh` creates real bundles and runs their own tests and quality checks, see below |
 | Every contribution point | `tests/Support/KitchenSinkFeature.php` (test only) uses the whole blueprint API |
 
 Snapshot workflow:
@@ -487,34 +560,54 @@ $ docker run --rm -v /tmp/flex82:/app -w /app composer:2 sh -c 'composer config 
 $ docker run --rm -v /tmp/flex82:/app -w /app php:8.2-cli vendor/bin/phpunit
 ```
 
-### End-to-end trial
+### End-to-end tests
 
-The plugin runs inside `composer create-project`, so test it end to end:
-
-1. Copy the skeleton's `composer.json` to a temporary directory (for example
-   `/tmp/e2e/skeleton`).
-2. In that copy, require `"yceruto/bundle-flex": "*@dev"` and add this
-   repository, so Composer installs your working copy instead of the release
-   from Packagist:
-   `{"type": "path", "url": "/path/to/bundle-flex", "options": {"symlink": false, "versions": {"yceruto/bundle-flex": "9.9.9"}}}`
-3. Run:
+The plugin runs inside `composer create-project`, so test it end to end with
+`tests/e2e/run.sh <target-dir>`. It creates a bundle from a
+[bundle-skeleton](https://github.com/yceruto/bundle-skeleton) checkout and this
+working copy, checks it (`composer.json`, autoloading, PHP syntax, the plugin is
+gone), optionally reinstalls its dependencies with a given Symfony version and
+the lowest dependencies, then runs the bundle's own scripts. A missing script
+fails the run.
 
 ```console
-$ BUNDLE_FLEX_NAME=acme/blog-bundle BUNDLE_FLEX_ALL=1 BUNDLE_FLEX_CONFIG_FORMAT=yaml \
-  composer create-project yceruto/bundle-skeleton /tmp/e2e/blog-bundle --no-interaction --stability=dev \
-  --repository='{"type": "path", "url": "/tmp/e2e/skeleton", "options": {"symlink": false, "versions": {"yceruto/bundle-skeleton": "1.0.x-dev"}}}'
-$ cd /tmp/e2e/blog-bundle && composer validate --strict
-$ vendor/bin/phpunit
+$ git clone -b feat/symfony-8 https://github.com/tito10047/bundle-skeleton /tmp/skeleton
+$ E2E_SKELETON_DIR=/tmp/skeleton BUNDLE_FLEX_NAME=acme/blog-bundle BUNDLE_FLEX_ALL=1 \
+  BUNDLE_FLEX_CONFIG_FORMAT=yaml E2E_SYMFONY='8.1.*' E2E_SCRIPTS='test qa' \
+  tests/e2e/run.sh /tmp/e2e/blog-bundle
 ```
 
-`--repository` is only used to locate the skeleton. The plugin repository must
-be declared in the skeleton's `composer.json` (step 2). Use a stable version
-higher than the latest release, otherwise `prefer-stable` picks the release
-from Packagist.
+| Variable | |
+|---|---|
+| `E2E_SKELETON_DIR` | skeleton checkout; when empty, `E2E_SKELETON_REPOSITORY` (default: `https://github.com/tito10047/bundle-skeleton.git`) is cloned at `E2E_SKELETON_REF` (default: `feat/symfony-8`) |
+| `E2E_PLUGIN_VERSION` | version given to the working copy; it must satisfy the skeleton's constraint (default: `1.0.0`) |
+| `E2E_SYMFONY` | Symfony versions to install, e.g. `7.4.*`, with `SYMFONY_REQUIRE` and a global Symfony Flex like the generated CI |
+| `E2E_DEPENDENCIES` | `highest` (default) or `lowest` |
+| `E2E_SCRIPTS` | scripts of the bundle to run (default: `test qa`) |
+| `BUNDLE_FLEX_*` | the answers, see above |
 
-The `composer.json` of the generated bundle keeps the `repositories` of your
-skeleton copy: remove them before resolving its dependencies elsewhere (e.g. in
-a PHP 8.2 container with `composer update --prefer-lowest`).
+Nothing test-specific may leak into the generated `composer.json`, so neither
+`composer.json` is modified. The skeleton is exported with `git archive` (its
+`export-ignore` rules apply, as for the dist archive). The plugin is copied
+without `vendor/` and declared as a path repository in the global configuration
+of a temporary `COMPOSER_HOME`:
+
+```console
+$ composer config --global repositories.bundle-flex \
+  '{"type": "path", "url": "/path/to/bundle-flex", "options": {"symlink": false, "versions": {"yceruto/bundle-flex": "1.0.0"}}}'
+$ composer create-project yceruto/bundle-skeleton /tmp/e2e/blog-bundle --no-interaction \
+  --repository='{"type": "path", "url": "/path/to/skeleton", "options": {"symlink": false, "versions": {"yceruto/bundle-skeleton": "1.0.0"}}}'
+```
+
+To run it on PHP 8.2, use a `php:8.2-cli` container with Git, `unzip` and
+Composer, and mount the repositories at the same paths (a Git worktree refers
+to its main repository by absolute path).
+
+The CI runs it for both feature presets (`BUNDLE_FLEX_ALL=0` and `1`) in each
+configuration format: on PHP 8.2 with Symfony 7.4 and the lowest dependencies
+(`test`), and on PHP 8.5 with Symfony 8.1 (`test qa`). The skeleton repository
+and branch can be changed with the `workflow_dispatch` inputs or the
+`SKELETON_REPOSITORY` and `SKELETON_REF` repository variables.
 
 ### The test suite of the generated bundle
 
@@ -532,8 +625,7 @@ a PHP 8.2 container with `composer update --prefer-lowest`).
   `DebugClassLoader`. A feature that needs them can require it.
 - Coverage: the generated code is fully covered. Keep it this way (the best
   practices ask for 95%) when adding a feature: generate the tests of its code.
-- Check the generated bundle, not only the snapshots: create it end to end, then
-  run its tests on PHP 8.2 with `composer update --prefer-lowest` (Symfony 7.4)
-  and on the latest PHP with the latest Symfony, and run PHPStan (level max with
-  the Symfony, PHPUnit and strict rules extensions) and PHP-CS-Fixer on `src/`,
-  `tests/` and `config/`.
+- Check the generated bundle, not only the snapshots: run the end-to-end tests
+  (above) on PHP 8.2 with Symfony 7.4 and the lowest dependencies (`test`), and
+  on the latest PHP with the latest Symfony (`qa`: the tests, then PHPStan,
+  PHP-CS-Fixer and Rector on `config/`, `src/` and `tests/`).
