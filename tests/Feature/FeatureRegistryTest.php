@@ -15,8 +15,13 @@ namespace Yceruto\BundleFlex\Tests\Feature;
 
 use PHPUnit\Framework\TestCase;
 use Yceruto\BundleFlex\Feature\FeatureGroup;
+use Yceruto\BundleFlex\Feature\FeatureInterface;
 use Yceruto\BundleFlex\Feature\FeatureRegistry;
 use Yceruto\BundleFlex\Feature\FeatureSelection;
+use Yceruto\BundleFlex\Feature\GitHubActionsFeature;
+use Yceruto\BundleFlex\Feature\PhpCsFixerFeature;
+use Yceruto\BundleFlex\Feature\PhpStanFeature;
+use Yceruto\BundleFlex\Feature\RectorFeature;
 use Yceruto\BundleFlex\Feature\SemanticConfigFeature;
 use Yceruto\BundleFlex\Tests\Support\TestFeature;
 
@@ -84,5 +89,11 @@ final class FeatureRegistryTest extends TestCase
         $registry = FeatureRegistry::createDefault();
 
         self::assertInstanceOf(SemanticConfigFeature::class, $registry->get(SemanticConfigFeature::NAME));
+        // quality assurance features come last, in this order: they adapt to everything contributed before them
+        self::assertSame(
+            [PhpStanFeature::NAME, PhpCsFixerFeature::NAME, RectorFeature::NAME, GitHubActionsFeature::NAME],
+            array_map(static fn (FeatureInterface $feature): string => $feature->getName(), $registry->getByGroup(FeatureGroup::QualityAssurance)),
+        );
+        self::assertSame(GitHubActionsFeature::NAME, array_key_last(iterator_to_array($registry)));
     }
 }

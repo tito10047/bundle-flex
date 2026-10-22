@@ -71,6 +71,7 @@ final class FeatureRegistry implements \IteratorAggregate, \Countable
             new PhpStanFeature(),
             new PhpCsFixerFeature(),
             new RectorFeature(),
+            new GitHubActionsFeature(),
         );
     }
 

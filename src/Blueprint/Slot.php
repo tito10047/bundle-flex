@@ -81,4 +81,16 @@ enum Slot: string
      * Rendered only when the "phpstan" feature is enabled.
      */
     case PhpStanParameters = 'phpstan.parameters';
+
+    /**
+     * Service containers needed by the tests (entries of a job's "services" mapping), e.g. a database.
+     * Rendered in the "tests" and "coverage" jobs of .github/workflows/ci.yml when the "ci" feature is enabled.
+     */
+    case CiTestServices = 'ci.test_services';
+
+    /**
+     * Steps (YAML list items) run after the dependencies are installed and before the tests, e.g. creating a database.
+     * Rendered in the "tests" and "coverage" jobs of .github/workflows/ci.yml when the "ci" feature is enabled.
+     */
+    case CiTestSteps = 'ci.test_steps';
 }
