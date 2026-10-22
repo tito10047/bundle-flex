@@ -19,6 +19,7 @@ use Yceruto\BundleFlex\Blueprint\BundleBlueprint;
 use Yceruto\BundleFlex\Blueprint\ComposerScript;
 use Yceruto\BundleFlex\Blueprint\FileTemplate;
 use Yceruto\BundleFlex\Blueprint\ListSlot;
+use Yceruto\BundleFlex\Contributor\Core\TestsContributor;
 use Yceruto\BundleFlex\Feature\FeatureGroup;
 use Yceruto\BundleFlex\Feature\FeatureSelection;
 use Yceruto\BundleFlex\Feature\PhpCsFixerFeature;
@@ -39,7 +40,7 @@ final class PhpCsFixerFeatureTest extends TestCase
     public function testContributesTheConfigurationAndTheScripts(): void
     {
         $blueprint = new BundleBlueprint(OptionsFactory::create(features: ['cs-fixer' => true]));
-        $blueprint->composer->requireDev('phpunit/phpunit', '^11.5 || ^12.0');
+        $blueprint->composer->requireDev('phpunit/phpunit', TestsContributor::PHPUNIT_CONSTRAINT);
 
         (new PhpCsFixerFeature())->contribute($blueprint);
 
@@ -62,7 +63,8 @@ final class PhpCsFixerFeatureTest extends TestCase
     public static function providePhpUnitConstraints(): iterable
     {
         yield 'no PHPUnit' => [null, null];
-        yield 'PHPUnit 11.5 and 12' => ['^11.5 || ^12.0', '@PHPUnit11x0Migration:risky'];
+        yield 'PHPUnit of the generated test suite' => [TestsContributor::PHPUNIT_CONSTRAINT, '@PHPUnit11x0Migration:risky'];
+        yield 'PHPUnit 11.5 to 13' => ['^11.5 || ^12.0 || ^13.0', '@PHPUnit11x0Migration:risky'];
         yield 'newer than every set' => ['^13.0', '@PHPUnit11x0Migration:risky'];
         yield 'PHPUnit 10' => ['^10.5 || ^11.0', '@PHPUnit10x0Migration:risky'];
         yield 'older than every set' => ['^9.6', null];

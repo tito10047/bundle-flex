@@ -18,6 +18,7 @@ use Yceruto\BundleFlex\Blueprint\BundleBlueprint;
 use Yceruto\BundleFlex\Blueprint\ComposerScript;
 use Yceruto\BundleFlex\Blueprint\FileTemplate;
 use Yceruto\BundleFlex\Blueprint\ListSlot;
+use Yceruto\BundleFlex\Contributor\Core\TestsContributor;
 use Yceruto\BundleFlex\Feature\FeatureGroup;
 use Yceruto\BundleFlex\Feature\FeatureSelection;
 use Yceruto\BundleFlex\Feature\PhpStanFeature;
@@ -58,7 +59,7 @@ final class PhpStanFeatureTest extends TestCase
     public function testAddsThePhpUnitExtensionWhenTheBundleUsesPhpUnit(): void
     {
         $blueprint = new BundleBlueprint(OptionsFactory::create(features: ['phpstan' => true]));
-        $blueprint->composer->requireDev('phpunit/phpunit', '^11.5 || ^12.0');
+        $blueprint->composer->requireDev('phpunit/phpunit', TestsContributor::PHPUNIT_CONSTRAINT);
 
         (new PhpStanFeature())->contribute($blueprint);
 
