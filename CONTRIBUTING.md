@@ -177,7 +177,7 @@ $blueprint->services->add(new ServiceDefinition($id, $class, $arguments, $tags, 
 $blueprint->services->addAlias(new ServiceAlias($id, $target, public: false));
 
 // config/routes.{php,yaml} (Blueprint\RoutingConfiguration)
-$blueprint->routes->add(new RouteDefinition($name, $path, $controller, $methods));
+$blueprint->routes->add(new RouteDefinition($name, $path, $controller, $methods, $defaults, $requirements));
 
 // Shared templates (Blueprint\Slots)
 $blueprint->slots->addPartial(Slot $slot, string $template, array $parameters = [], int $priority = 0);
@@ -207,7 +207,9 @@ Rules:
   `ServiceArgument::service($id)`, `ServiceArgument::parameter($name)` or
   `ServiceArgument::value($scalarOrList)`. Literal values are escaped for you.
 - **Routes.** Route names must be `<alias>_<name>`. The controller is a service
-  id, either an invokable controller or `id::method`.
+  id, either an invokable controller or `id::method`. Defaults and requirements
+  are only accepted for the placeholders of the path, and requirements must be
+  valid regular expressions.
 - **Derived files.** `composer.json`, `config/services.<ext>` (always) and
   `config/routes.<ext>` (when there are routes) are generated from the
   blueprint, in the chosen `ConfigFormat`. `addFile()` refuses these
@@ -312,7 +314,7 @@ and a controllers feature imports its routes:
 ```php
 $blueprint->slots->addPartial(Slot::TestKernelConfigureRoutes, 'features/controllers/partials/test_kernel_routes.php.tpl');
 $blueprint->slots->addPartial(Slot::ReadmeInstallationSteps, 'features/controllers/partials/readme_step.md.tpl');
-// test_kernel_routes.php.tpl: $routes->import(\dirname(__DIR__, 2).'/config/<?= $options->configFormat->getFileName('routes') ?>');
+// test_kernel_routes.php.tpl: $routes->import('@<?= $naming->className ?>/config/<?= $options->configFormat->getFileName('routes') ?>');
 // readme_step.md.tpl:          Import the Routes\n\nImport the routes of the bundle in ...
 ```
 
@@ -359,18 +361,44 @@ documented for users.
 | Name | Group | Default | Variable |
 |---|---|---|---|
 | `config` (implemented, `SemanticConfigFeature`) | Features | yes | `BUNDLE_FLEX_CONFIG` |
-| `controllers` | Features | no | `BUNDLE_FLEX_CONTROLLERS` |
-| `twig` | Features | yes if `controllers`, else no | `BUNDLE_FLEX_TWIG` |
-| `translations` | Features | no | `BUNDLE_FLEX_TRANSLATIONS` |
+| `controllers` (implemented, `ControllersFeature`) | Features | no | `BUNDLE_FLEX_CONTROLLERS` |
+| `twig` (implemented, `TwigFeature`) | Features | yes if `controllers`, else no | `BUNDLE_FLEX_TWIG` |
+| `translations` (implemented, `TranslationsFeature`) | Features | no | `BUNDLE_FLEX_TRANSLATIONS` |
 | `command` | Features | no | `BUNDLE_FLEX_COMMAND` |
 | `event-listener` | Features | no | `BUNDLE_FLEX_EVENT_LISTENER` |
 | `doctrine` | Features | no | `BUNDLE_FLEX_DOCTRINE` |
-| `public-assets` | Features | no | `BUNDLE_FLEX_PUBLIC_ASSETS` |
-| `ux` | Features | no | `BUNDLE_FLEX_UX` |
+| `public-assets` (implemented, `PublicAssetsFeature`) | Features | no | `BUNDLE_FLEX_PUBLIC_ASSETS` |
+| `ux` (implemented, `UxFeature`) | Features | no | `BUNDLE_FLEX_UX` |
 | `phpstan` (implemented, `PhpStanFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_PHPSTAN` |
 | `cs-fixer` (implemented, `PhpCsFixerFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_CS_FIXER` |
 | `rector` (implemented, `RectorFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_RECTOR` |
 | `ci` (implemented, `GitHubActionsFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_CI` |
+
+### The web features
+
+`controllers`, `twig`, `translations`, `public-assets` and `ux` build one demo
+together, and each of them also works alone:
+
+| Feature | Generates | Uses |
+|---|---|---|
+| `controllers` | `src/Controller/HelloController.php` (final, invokable, no `AbstractController`), the `<alias>.controller.hello` service (private, tagged `controller.service_arguments`, which makes it public), the `<alias>_hello` route (`/hello/{name}`, default `World`, requirement `\w+`), `tests/Functional/HelloControllerTest.php`; the test kernel imports the routes like an application, `@<Bundle>/config/routes.<ext>`, and logs nothing (the default logger prints the 404 errors) | the greeter; Twig when `twig` is enabled, plain text otherwise |
+| `twig` | `templates/hello.html.twig` (no layout, a `title` block), `tests/Integration/TemplateTest.php`, TwigBundle in the test kernel (`strict_variables`) | the messages of `translations`, the stylesheet of `public-assets` (`asset()`), the Stimulus controller of `ux` (`stimulus_*()`) |
+| `translations` | `translations/<ShortName>.en.xlf` (XLIFF 1.2, the ids are the English messages, like Symfony's own translations, so they display without translator), `tests/Integration/TranslationsTest.php` (catalogue and XLIFF schema) | |
+| `public-assets` | `public/css/<slug>.css`, `tests/Integration/PublicAssetsTest.php` (runs `assets:install`), a README step | |
+| `ux` | `assets/package.json` (`@<vendor>/<package>`, the name StimulusBundle maps back to the Composer package), `assets/src/hello_controller.js` (plain ES module, no build step), the AssetMapper path prepended in `prependExtension()` when AssetMapper is available, `tests/Integration/AssetMapperTest.php`, the `symfony-ux` keyword, a README step | |
+
+Their dependencies follow one rule:
+
+- What the PHP code of the bundle uses is required (`require`): `symfony/http-foundation`
+  for the controller, and `twig/twig` when it renders the template.
+- What the templates need (`symfony/twig-bundle`, `symfony/asset` for `asset()`,
+  `symfony/stimulus-bundle` for `stimulus_*()`) is required when the bundle renders
+  them itself (`controllers` and `twig` are enabled), and only required for the tests
+  otherwise: the application including them has them. Use
+  `TwigFeature::requireForTemplates()` to follow this rule.
+- What only the tests use is a dev dependency: `symfony/browser-kit`, `symfony/translation`,
+  `symfony/console` (`assets:install`), `symfony/asset-mapper` (the bundle only configures
+  AssetMapper when the application uses it).
 
 ### Worked example: adding a console command feature
 

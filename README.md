@@ -22,6 +22,23 @@ for Symfony 7.4 LTS and 8.x. It then installs the bundle dependencies with a sin
 - [x] Writes a complete `composer.json` and installs the dependencies in one `composer update`.
 - [x] Runs without interaction, every answer can be preset with an environment variable.
 
+### Optional features
+
+Each feature is a question of the assistant, and a `BUNDLE_FLEX_<FEATURE>` environment variable:
+
+| Feature | Variable | Default | Generates |
+|---|---|---|---|
+| Semantic configuration | `BUNDLE_FLEX_CONFIG` | yes | `config/definition.php`, its documentation and tests |
+| Controller | `BUNDLE_FLEX_CONTROLLERS` | no | an invokable controller, its route (`config/routes.*`, imported by applications) and its functional test |
+| Twig template | `BUNDLE_FLEX_TWIG` | yes with a controller | `templates/hello.html.twig` (`@AcmeBlog` namespace, no layout), rendered by the controller |
+| Translations | `BUNDLE_FLEX_TRANSLATIONS` | no | `translations/AcmeBlog.en.xlf`, in the domain of the bundle, used by the template |
+| Public assets | `BUNDLE_FLEX_PUBLIC_ASSETS` | no | a stylesheet in `public/`, installed with `assets:install` and linked by the template |
+| Symfony UX | `BUNDLE_FLEX_UX` | no | a Stimulus controller (`assets/package.json`, `assets/src/`) exposed to AssetMapper, used by the template |
+| PHPStan | `BUNDLE_FLEX_PHPSTAN` | yes | `phpstan.dist.neon` (level max, strict, deprecation, Symfony and PHPUnit rules) |
+| PHP-CS-Fixer | `BUNDLE_FLEX_CS_FIXER` | yes | `.php-cs-fixer.dist.php` (Symfony coding standards) |
+| Rector | `BUNDLE_FLEX_RECTOR` | yes | `rector.php` |
+| GitHub Actions | `BUNDLE_FLEX_CI` | yes | a CI workflow testing every supported PHP and Symfony version, and Dependabot |
+
 ## Requirements
 
 PHP 8.2+ and Composer 2.6+.
