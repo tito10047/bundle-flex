@@ -49,6 +49,16 @@ final class SlotRendererTest extends TestCase
         self::assertSame("  ctx: first\n\n  ctx: second\n\n  line 1\n  line 2\n", $this->renderer->render(Slot::BundleBuild, 2));
     }
 
+    public function testRendersEachPartialSeparately(): void
+    {
+        $this->slots->addPartial(Slot::ReadmeInstallationSteps, 'slots/lines.txt.tpl');
+        $this->slots->addPartial(Slot::ReadmeInstallationSteps, 'slots/empty.txt.tpl');
+        $this->slots->addPartial(Slot::ReadmeInstallationSteps, 'slots/value.txt.tpl', ['value' => 'first'], 10);
+
+        self::assertSame(['ctx: first', "line 1\nline 2"], $this->renderer->renderEach(Slot::ReadmeInstallationSteps));
+        self::assertSame([], $this->renderer->renderEach(Slot::DocsSections));
+    }
+
     public function testPartialsCannotOverrideTheContext(): void
     {
         $this->slots->addPartial(Slot::BundleBuild, 'slots/value.txt.tpl', ['naming' => 'x', 'value' => 'y']);

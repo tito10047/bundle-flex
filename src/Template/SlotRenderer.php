@@ -48,6 +48,19 @@ final class SlotRenderer
      */
     public function render(Slot $slot, int $indent = 0): string
     {
+        $chunks = array_map(static fn (string $chunk): string => $chunk."\n", $this->renderEach($slot));
+
+        return $this->helper->indent(implode("\n", $chunks), $indent);
+    }
+
+    /**
+     * Renders each partial of the slot separately, for master templates that lay them out themselves
+     * (e.g. numbered installation steps). Partials rendering nothing are skipped.
+     *
+     * @return list<string> without trailing newlines, by priority (highest first, then registration order)
+     */
+    public function renderEach(Slot $slot): array
+    {
         $chunks = [];
         foreach ($this->slots->getPartials($slot) as $partial) {
             if ([] !== $conflicts = array_intersect_key($partial->parameters, $this->context)) {
@@ -56,11 +69,11 @@ final class SlotRenderer
 
             $content = rtrim($this->renderer->render($partial->template, $partial->parameters + $this->context), "\n");
             if ('' !== $content) {
-                $chunks[] = $content."\n";
+                $chunks[] = $content;
             }
         }
 
-        return $this->helper->indent(implode("\n", $chunks), $indent);
+        return $chunks;
     }
 
     public function has(Slot $slot): bool

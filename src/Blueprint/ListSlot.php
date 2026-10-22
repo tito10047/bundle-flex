@@ -30,6 +30,9 @@ enum ListSlot: string
     /** Fully-qualified class names imported ("use") by the test kernel, for code added to the TestKernel* slots. */
     case TestKernelUses = 'test_kernel.uses';
 
+    /** Markdown badges shown under the title of README.md, one per value, e.g. "[![CI](https://...svg)](https://...)". */
+    case ReadmeBadges = 'readme.badges';
+
     /** Paths excluded from the Composer archive in .gitattributes, e.g. "/phpstan.dist.neon". */
     case GitAttributesExportIgnore = 'gitattributes.export_ignore';
 
