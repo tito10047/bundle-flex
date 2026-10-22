@@ -70,6 +70,7 @@ final class FeatureRegistry implements \IteratorAggregate, \Countable
             // quality assurance, contributed last: these features adapt to everything contributed before them
             new PhpStanFeature(),
             new PhpCsFixerFeature(),
+            new RectorFeature(),
         );
     }
 
