@@ -51,10 +51,19 @@ final class PhpCsFixerFeatureTest extends TestCase
         ], $blueprint->composer->getScripts());
         self::assertSame(['cs:fix'], $blueprint->composer->getScriptsAfterInstall());
         self::assertEquals([
-            '.php-cs-fixer.dist.php' => new FileTemplate('features/cs-fixer/.php-cs-fixer.dist.php.tpl', '.php-cs-fixer.dist.php', ['phpUnitMigrationSet' => '@PHPUnit11x0Migration:risky']),
+            '.php-cs-fixer.dist.php' => new FileTemplate('features/cs-fixer/.php-cs-fixer.dist.php.tpl', '.php-cs-fixer.dist.php', ['usesPhpUnit' => true, 'phpUnitMigrationSet' => '@PHPUnit11x0Migration:risky']),
         ], $blueprint->getFiles());
         self::assertSame(['/.php-cs-fixer.dist.php'], $blueprint->slots->getValues(ListSlot::GitAttributesExportIgnore));
         self::assertSame(['/.php-cs-fixer.php', '/.php-cs-fixer.cache'], $blueprint->slots->getValues(ListSlot::GitIgnore));
+    }
+
+    public function testConfiguresNoPhpUnitRuleWithoutPhpUnit(): void
+    {
+        $blueprint = new BundleBlueprint(OptionsFactory::create(features: ['cs-fixer' => true]));
+
+        (new PhpCsFixerFeature())->contribute($blueprint);
+
+        self::assertSame(['usesPhpUnit' => false, 'phpUnitMigrationSet' => null], $blueprint->getFiles()['.php-cs-fixer.dist.php']->parameters);
     }
 
     /**

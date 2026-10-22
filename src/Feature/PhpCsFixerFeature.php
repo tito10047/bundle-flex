@@ -68,6 +68,7 @@ final class PhpCsFixerFeature implements FeatureInterface
 
         // quality assurance features contribute last: PHPUnit is known by now if the bundle uses it
         $blueprint->addFile('features/cs-fixer/.php-cs-fixer.dist.php.tpl', '.php-cs-fixer.dist.php', [
+            'usesPhpUnit' => null !== $composer->getConstraint('phpunit/phpunit'),
             'phpUnitMigrationSet' => self::getPhpUnitMigrationSet($composer->getConstraint('phpunit/phpunit')),
         ]);
         $blueprint->slots->addValue(ListSlot::GitAttributesExportIgnore, '/.php-cs-fixer.dist.php');

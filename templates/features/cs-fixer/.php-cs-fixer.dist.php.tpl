@@ -1,5 +1,6 @@
 <?php
 /**
+ * @var bool        $usesPhpUnit
  * @var string|null $phpUnitMigrationSet
  */
 ?>
@@ -26,6 +27,10 @@ return (new PhpCsFixer\Config())
         '@PHP8x2Migration:risky' => true,
 <?php if (null !== $phpUnitMigrationSet): ?>
         '<?= $phpUnitMigrationSet ?>' => true,
+<?php endif ?>
+<?php if ($usesPhpUnit): ?>
+        // assertions are static methods: call them statically, as PHPStan's strict rules require
+        'php_unit_test_case_static_method_calls' => ['call_type' => 'self'],
 <?php endif ?>
         'declare_strict_types' => true,
     ])
