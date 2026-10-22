@@ -19,6 +19,8 @@ for Symfony 7.4 LTS and 8.x. It then installs the bundle dependencies with a sin
       and `.editorconfig`.
 - [x] Generates a working example (a greeter service, its interface and the exceptions of the bundle) and a
       PHPUnit test suite with a test kernel, fully covered and failing on deprecations caused by the bundle.
+- [x] Optional backend features, each with its tests and documentation: an invokable console command loaded lazily,
+      a `kernel.response` event listener, and a Doctrine ORM entity mapped in XML, registered when DoctrineBundle is enabled.
 - [x] Writes a complete `composer.json` and installs the dependencies in one `composer update`.
 - [x] Runs without interaction, every answer can be preset with an environment variable.
 

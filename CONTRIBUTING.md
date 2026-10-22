@@ -364,9 +364,9 @@ documented for users.
 | `controllers` (implemented, `ControllersFeature`) | Features | no | `BUNDLE_FLEX_CONTROLLERS` |
 | `twig` (implemented, `TwigFeature`) | Features | yes if `controllers`, else no | `BUNDLE_FLEX_TWIG` |
 | `translations` (implemented, `TranslationsFeature`) | Features | no | `BUNDLE_FLEX_TRANSLATIONS` |
-| `command` | Features | no | `BUNDLE_FLEX_COMMAND` |
-| `event-listener` | Features | no | `BUNDLE_FLEX_EVENT_LISTENER` |
-| `doctrine` | Features | no | `BUNDLE_FLEX_DOCTRINE` |
+| `command` (implemented, `CommandFeature`) | Features | no | `BUNDLE_FLEX_COMMAND` |
+| `event-listener` (implemented, `EventListenerFeature`) | Features | no | `BUNDLE_FLEX_EVENT_LISTENER` |
+| `doctrine` (implemented, `DoctrineFeature`) | Features | no | `BUNDLE_FLEX_DOCTRINE` |
 | `public-assets` (implemented, `PublicAssetsFeature`) | Features | no | `BUNDLE_FLEX_PUBLIC_ASSETS` |
 | `ux` (implemented, `UxFeature`) | Features | no | `BUNDLE_FLEX_UX` |
 | `phpstan` (implemented, `PhpStanFeature`) | QualityAssurance | yes | `BUNDLE_FLEX_PHPSTAN` |
@@ -402,6 +402,8 @@ Their dependencies follow one rule:
 
 ### Worked example: adding a console command feature
 
+This is how `CommandFeature` is built (simplified):
+
 1. **The feature class**, `src/Feature/CommandFeature.php`:
 
    ```php
@@ -434,21 +436,24 @@ Their dependencies follow one rule:
            $naming = $blueprint->naming;
 
            $blueprint->composer->require('symfony/console', Constraint::SYMFONY);
-           $blueprint->addFile('features/command/HelloCommand.php.tpl', 'src/Command/HelloCommand.php');
+           $blueprint->addFile('features/command/src/Command/HelloCommand.php.tpl', 'src/Command/HelloCommand.php');
+           $blueprint->addFile('features/command/tests/Command/HelloCommandTest.php.tpl', 'tests/Command/HelloCommandTest.php');
            $blueprint->services->add(new ServiceDefinition(
                $naming->alias.'.command.hello',
                $naming->namespace.'\Command\HelloCommand',
-               [ServiceArgument::service($naming->alias.'.greeter')],
-               [new ServiceTag('console.command')],
+               [ServiceArgument::service(GreeterContributor::serviceId($naming))],
+               // the command name on the tag makes the command lazy
+               [new ServiceTag('console.command', ['command' => $naming->slug.':hello'])],
            ));
-           $blueprint->slots->addPartial(Slot::ReadmeSections, 'features/command/partials/readme.md.tpl');
+           $blueprint->slots->addPartial(Slot::DocsSections, 'features/command/partials/docs.md.tpl');
        }
    }
    ```
 
-2. **Its templates**, in `templates/features/command/`:
-   `HelloCommand.php.tpl` and `partials/readme.md.tpl`. The service definition
-   is rendered for you, in the chosen configuration format.
+2. **Its templates**, in `templates/features/command/`, mirror the destination
+   paths (`src/Command/HelloCommand.php.tpl`, `tests/...`); partials go in
+   `partials/` (`partials/docs.md.tpl`). The service definition is rendered for
+   you, in the chosen configuration format.
 
 3. **Register it** in `FeatureRegistry::createDefault()`, at the right place in
    its group.
@@ -462,6 +467,37 @@ Their dependencies follow one rule:
      `GeneratedBundleTest` then lints the PHP files, validates `composer.json`,
      and checks that the services and routes load in a real container in every
      format.
+
+### Backend features
+
+| Feature | Generates | Registers | Tests |
+|---|---|---|---|
+| `command` | `src/Command/HelloCommand.php`: invokable command (`#[AsCommand]`, `__invoke()` with `#[Argument]` and `#[Option]`, `SymfonyStyle`), named `<slug>:hello` | `<alias>.command.hello`, tagged `console.command` with the command name (lazy) | `CommandTester` on the command, and through the `Application` of the test kernel |
+| `event-listener` | `src/EventListener/GreetingHeaderListener.php`: adds an `X-<Vendor>-<Name>-Greeting` header to the main response, unless the application set it | `<alias>.event_listener.greeting_header`, tagged `kernel.event_listener` (`kernel.response`, `onKernelResponse`, priority 0) | unit test, and the listener and its priority on the event dispatcher of the test kernel |
+| `doctrine` | `src/Entity/Greeting.php` (plain class) and `config/doctrine/Greeting.orm.xml`, table `<alias>_greeting` | the mapping, in `prependExtension()`, only when DoctrineBundle is enabled | entity unit test; prepended configuration with and without DoctrineBundle; mapping, schema and persistence on in-memory SQLite |
+
+- **Command names** use the slug as namespace (`acme-blog:hello`), like `doctrine:`
+  or `make:`: `bin/console list acme-blog` lists the commands of the bundle, and
+  they cannot collide with the commands of other bundles. The name is declared
+  on the `console.command` tag, like everything else in the explicit service
+  definitions, and in `#[AsCommand]`, which also holds the description and help
+  and is read when the command is used without the container (unit tests).
+  A command with a name is lazy: listing the commands does not create it.
+- **Doctrine.** The entity is concrete and mapped in XML, as the best practices
+  recommend: applications can override the mapping, which attributes don't
+  allow. A mapped superclass would force every application to write its own
+  entity before using the bundle. The mapping is registered under the bundle
+  name (`doctrine.orm.mappings.<BundleClass>`), with `is_bundle: false` and an
+  absolute `dir`, so it works whatever the `auto_mapping` setting (auto-mapping
+  skips a bundle that already has a mapping). Dependencies: `doctrine/orm`
+  `^3.4` (native lazy objects on PHP 8.4), `doctrine/doctrine-bundle`
+  `^2.18 || ^3.0` as a dev dependency (2.x is the only one for PHP 8.2/8.3,
+  3.x the only one for Symfony 8). The test kernel opts in to the behaviors of
+  DoctrineBundle 3 when DoctrineBundle 2 is installed (`enable_lazy_ghost_objects`,
+  `enable_native_lazy_objects` on PHP 8.4+, `controller_resolver.auto_mapping:
+  false`) and validates the XML mapping (`validate_xml_mapping`), so neither
+  version triggers deprecations. With PHPStan, `phpstan/phpstan-doctrine` reads
+  the mapping from the entity manager of the test kernel (`tests/object-manager.php`).
 
 ### Quality assurance features
 
@@ -516,6 +552,8 @@ To hook into them from a feature:
   ```php
   if ($blueprint->hasFeature(PhpStanFeature::NAME)) {
       $blueprint->composer->requireDev('phpstan/phpstan-doctrine', '^2.0');
+      // the entity manager of the test kernel, from which the extension reads the XML mapping
+      $blueprint->addFile('features/doctrine/tests/object-manager.php.tpl', 'tests/object-manager.php');
       $blueprint->slots->addPartial(Slot::PhpStanParameters, 'features/doctrine/partials/phpstan.neon.tpl');
   }
   ```
