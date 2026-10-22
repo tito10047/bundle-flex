@@ -72,6 +72,7 @@ final class FeatureRegistry implements \IteratorAggregate, \Countable
             new TranslationsFeature(),
             new CommandFeature(),
             new EventListenerFeature(),
+            new DoctrineFeature(),
             new PublicAssetsFeature(),
             new UxFeature(),
             // quality assurance, contributed last: these features adapt to everything contributed before them
