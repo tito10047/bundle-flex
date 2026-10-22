@@ -2,6 +2,7 @@
 use Yceruto\BundleFlex\Feature\PublicAssetsFeature;
 use Yceruto\BundleFlex\Feature\TranslationsFeature;
 use Yceruto\BundleFlex\Feature\TwigFeature;
+use Yceruto\BundleFlex\Feature\UxFeature;
 
 /**
  * @var Yceruto\BundleFlex\Blueprint\BundleBlueprint $blueprint
@@ -14,6 +15,7 @@ $imports = $helper->imports([
     ...($blueprint->hasFeature(PublicAssetsFeature::NAME) ? ['Symfony\Component\Asset\Packages'] : []),
 ], $naming->testsNamespace.'\Integration');
 $template = TwigFeature::templateName($naming);
+$ux = $blueprint->hasFeature(UxFeature::NAME);
 ?>
 <?= "<?php\n" ?>
 
@@ -43,6 +45,10 @@ final class TemplateTest extends KernelTestCase
         $packages = self::getContainer()->get('assets.packages');
         self::assertInstanceOf(Packages::class, $packages);
         self::assertStringContainsString('href="'.$packages->getUrl(<?= $helper->php(PublicAssetsFeature::stylesheetPublicPath($naming)) ?>).'"', $html);
+<?php endif ?>
+<?php if ($ux): ?>
+        self::assertStringContainsString(<?= $helper->php('data-controller="'.UxFeature::controllerIdentifier($naming).'"') ?>, $html);
+        self::assertStringContainsString(<?= $helper->php('data-action="'.UxFeature::controllerIdentifier($naming).'#close"') ?>, $html);
 <?php endif ?>
     }
 

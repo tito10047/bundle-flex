@@ -3,15 +3,18 @@ use Yceruto\BundleFlex\Feature\ControllersFeature;
 use Yceruto\BundleFlex\Feature\PublicAssetsFeature;
 use Yceruto\BundleFlex\Feature\TranslationsFeature;
 use Yceruto\BundleFlex\Feature\TwigFeature;
+use Yceruto\BundleFlex\Feature\UxFeature;
 
 /**
  * @var Yceruto\BundleFlex\Blueprint\BundleBlueprint $blueprint
  * @var Yceruto\BundleFlex\Naming\BundleNaming       $naming
  */
 $translations = $blueprint->hasFeature(TranslationsFeature::NAME);
+$ux = $blueprint->hasFeature(UxFeature::NAME);
 $domain = $naming->translationDomain;
 $message = static fn (string $message): string => $translations ? "{{ '".$message."'|trans({}, '".$domain."') }}" : $message;
 $css = $naming->slug.'-hello';
+$controller = UxFeature::controllerName($naming);
 ?>
 {#
 <?php if ($blueprint->hasFeature(ControllersFeature::NAME)): ?>
@@ -30,7 +33,10 @@ $css = $naming->slug.'-hello';
 <?php if ($blueprint->hasFeature(PublicAssetsFeature::NAME)): ?>
 <link rel="stylesheet" href="{{ asset('<?= PublicAssetsFeature::stylesheetPublicPath($naming) ?>') }}">
 <?php endif ?>
-<section class="<?= $css ?>">
+<section class="<?= $css ?>"<?= $ux ? " {{ stimulus_controller('".$controller."') }}" : '' ?>>
     <h1 class="<?= $css ?>__title">{% block title %}<?= $message(TranslationsFeature::TITLE_MESSAGE) ?>{% endblock %}</h1>
     <p class="<?= $css ?>__greeting">{{ greeting }}</p>
+<?php if ($ux): ?>
+    <button type="button" class="<?= $css ?>__close" {{ stimulus_action('<?= $controller ?>', 'close') }}><?= $message(TranslationsFeature::CLOSE_MESSAGE) ?></button>
+<?php endif ?>
 </section>

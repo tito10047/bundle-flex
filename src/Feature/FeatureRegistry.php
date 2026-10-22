@@ -71,6 +71,7 @@ final class FeatureRegistry implements \IteratorAggregate, \Countable
             new TwigFeature(),
             new TranslationsFeature(),
             new PublicAssetsFeature(),
+            new UxFeature(),
             // quality assurance, contributed last: these features adapt to everything contributed before them
             new PhpStanFeature(),
             new PhpCsFixerFeature(),

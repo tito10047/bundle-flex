@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Yceruto\BundleFlex\Tests\Feature;
 
 use PHPUnit\Framework\TestCase;
+use Yceruto\BundleFlex\Feature\ControllersFeature;
 use Yceruto\BundleFlex\Feature\FeatureGroup;
 use Yceruto\BundleFlex\Feature\FeatureInterface;
 use Yceruto\BundleFlex\Feature\FeatureRegistry;
@@ -21,8 +22,12 @@ use Yceruto\BundleFlex\Feature\FeatureSelection;
 use Yceruto\BundleFlex\Feature\GitHubActionsFeature;
 use Yceruto\BundleFlex\Feature\PhpCsFixerFeature;
 use Yceruto\BundleFlex\Feature\PhpStanFeature;
+use Yceruto\BundleFlex\Feature\PublicAssetsFeature;
 use Yceruto\BundleFlex\Feature\RectorFeature;
 use Yceruto\BundleFlex\Feature\SemanticConfigFeature;
+use Yceruto\BundleFlex\Feature\TranslationsFeature;
+use Yceruto\BundleFlex\Feature\TwigFeature;
+use Yceruto\BundleFlex\Feature\UxFeature;
 use Yceruto\BundleFlex\Tests\Support\TestFeature;
 
 final class FeatureRegistryTest extends TestCase
@@ -89,6 +94,11 @@ final class FeatureRegistryTest extends TestCase
         $registry = FeatureRegistry::createDefault();
 
         self::assertInstanceOf(SemanticConfigFeature::class, $registry->get(SemanticConfigFeature::NAME));
+        // features depending on the answers of other features come after them
+        $names = array_keys(iterator_to_array($registry));
+        foreach ([[ControllersFeature::NAME, TwigFeature::NAME], [TwigFeature::NAME, TranslationsFeature::NAME], [TranslationsFeature::NAME, PublicAssetsFeature::NAME], [PublicAssetsFeature::NAME, UxFeature::NAME]] as [$before, $after]) {
+            self::assertLessThan(array_search($after, $names, true), array_search($before, $names, true), $before.' must be registered before '.$after);
+        }
         // quality assurance features come last, in this order: they adapt to everything contributed before them
         self::assertSame(
             [PhpStanFeature::NAME, PhpCsFixerFeature::NAME, RectorFeature::NAME, GitHubActionsFeature::NAME],

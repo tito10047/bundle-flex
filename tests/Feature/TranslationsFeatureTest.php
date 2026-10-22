@@ -37,7 +37,7 @@ final class TranslationsFeatureTest extends TestCase
 
     public function testContributesTheMessagesInTheDomainOfTheBundle(): void
     {
-        $blueprint = new BundleBlueprint(OptionsFactory::create(features: ['translations' => true]));
+        $blueprint = $this->createBlueprint(twig: false, ux: false);
 
         (new TranslationsFeature())->contribute($blueprint);
 
@@ -51,8 +51,20 @@ final class TranslationsFeatureTest extends TestCase
         self::assertEquals([new Partial('features/translations/partials/docs.md.tpl')], $blueprint->slots->getPartials(Slot::DocsSections));
     }
 
+    public function testTheCloseButtonOfTheTemplateIsTranslated(): void
+    {
+        self::assertSame(['Welcome!'], TranslationsFeature::getMessages($this->createBlueprint(twig: true, ux: false)));
+        self::assertSame(['Welcome!'], TranslationsFeature::getMessages($this->createBlueprint(twig: false, ux: true)));
+        self::assertSame(['Welcome!', 'Close'], TranslationsFeature::getMessages($this->createBlueprint(twig: true, ux: true)));
+    }
+
     public function testDerivesTheFileName(): void
     {
         self::assertSame('translations/MyVendorFooBar.fr.xlf', TranslationsFeature::fileName(OptionsFactory::create('my-vendor/foo-bar-bundle')->naming, 'fr'));
+    }
+
+    private function createBlueprint(bool $twig, bool $ux): BundleBlueprint
+    {
+        return new BundleBlueprint(OptionsFactory::create(features: ['twig' => $twig, 'translations' => true, 'ux' => $ux]));
     }
 }
