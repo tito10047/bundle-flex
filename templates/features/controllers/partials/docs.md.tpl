@@ -1,8 +1,10 @@
 <?php
 use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Feature\ControllersFeature;
+use Yceruto\BundleFlex\Feature\TwigFeature;
 
 /**
+ * @var Yceruto\BundleFlex\Blueprint\BundleBlueprint $blueprint
  * @var Yceruto\BundleFlex\Naming\BundleNaming       $naming
  * @var Yceruto\BundleFlex\Options\BundleOptions     $options
  */
@@ -21,7 +23,11 @@ The bundle provides a page greeting people, once its routes are imported
 
 With the `<?= $prefix ?>` prefix, `<?= $prefix ?>/hello/Jane` greets "<?= $greeting ?> Jane!", and
 `<?= $prefix ?>/hello` greets "<?= $greeting ?> <?= ControllersFeature::DEFAULT_NAME ?>!". The name must be a single word.
+<?php if ($blueprint->hasFeature(TwigFeature::NAME)): ?>
+The page is rendered from the `<?= TwigFeature::templateName($naming) ?>` template, see [Templates](#templates).
+<?php else: ?>
 The page is plain text.
+<?php endif ?>
 
 Link to the page by the name of its route, never by its path, which depends
 on the prefix chosen by the application:

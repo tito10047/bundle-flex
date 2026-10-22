@@ -42,7 +42,7 @@ final class ControllersFeatureTest extends TestCase
 
     public function testContributesTheControllerItsRouteAndItsTests(): void
     {
-        $blueprint = $this->contribute();
+        $blueprint = $this->contribute(twig: false);
 
         self::assertEquals([
             'src/Controller/HelloController.php' => new FileTemplate('features/controllers/src/Controller/HelloController.php.tpl', 'src/Controller/HelloController.php'),
@@ -67,6 +67,15 @@ final class ControllersFeatureTest extends TestCase
         self::assertEquals([new Partial('features/controllers/partials/docs.md.tpl')], $blueprint->slots->getPartials(Slot::DocsSections));
     }
 
+    public function testInjectsTwigWhenTheBundleHasTemplates(): void
+    {
+        $blueprint = $this->contribute(twig: true);
+
+        $service = $blueprint->services->getServices()['acme_blog.controller.hello'] ?? null;
+        self::assertNotNull($service);
+        self::assertEquals([ServiceArgument::service('acme_blog.greeter'), ServiceArgument::service('twig')], $service->arguments);
+    }
+
     public function testDerivesTheNames(): void
     {
         $naming = OptionsFactory::create('my-vendor/foo-bar-bundle')->naming;
@@ -77,9 +86,9 @@ final class ControllersFeatureTest extends TestCase
         self::assertSame('/my-vendor-foo-bar', ControllersFeature::routePrefix($naming));
     }
 
-    private function contribute(): BundleBlueprint
+    private function contribute(bool $twig): BundleBlueprint
     {
-        $blueprint = new BundleBlueprint(OptionsFactory::create(features: ['controllers' => true]));
+        $blueprint = new BundleBlueprint(OptionsFactory::create(features: ['controllers' => true, 'twig' => $twig]));
 
         (new ControllersFeature())->contribute($blueprint);
 

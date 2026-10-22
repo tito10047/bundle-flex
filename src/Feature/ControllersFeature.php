@@ -29,7 +29,8 @@ use Yceruto\BundleFlex\Naming\BundleNaming;
  * which applications import.
  *
  * The controller is a final invokable class, without AbstractController: its dependencies are
- * injected explicitly. It returns plain text. Its functional test only checks the responses.
+ * injected explicitly. It renders the template of the "twig" feature when it is enabled, and
+ * returns plain text otherwise. Its functional test only checks the responses.
  *
  * @see https://symfony.com/doc/current/bundles/best_practices.html#controllers
  * @see https://symfony.com/doc/current/bundles/best_practices.html#routing
@@ -71,6 +72,11 @@ final class ControllersFeature implements FeatureInterface
     {
         $naming = $blueprint->naming;
 
+        $arguments = [ServiceArgument::service(GreeterContributor::serviceId($naming))];
+        if ($blueprint->hasFeature(TwigFeature::NAME)) {
+            $arguments[] = ServiceArgument::service('twig');
+        }
+
         // "symfony/routing" is required as soon as a route exists
         $blueprint->composer->require('symfony/http-foundation', Constraint::SYMFONY);
         $blueprint->composer->requireDev('symfony/browser-kit', Constraint::SYMFONY);
@@ -80,7 +86,7 @@ final class ControllersFeature implements FeatureInterface
 
         // the tag makes the service public, as the controller resolver requires:
         // the definition stays private, like every service of the bundle
-        $blueprint->services->add(new ServiceDefinition(self::serviceId($naming), self::className($naming), [ServiceArgument::service(GreeterContributor::serviceId($naming))], [
+        $blueprint->services->add(new ServiceDefinition(self::serviceId($naming), self::className($naming), $arguments, [
             new ServiceTag('controller.service_arguments'),
         ]));
         $blueprint->routes->add(new RouteDefinition(

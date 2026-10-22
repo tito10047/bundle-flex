@@ -1,11 +1,14 @@
 <?php
 use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Feature\ControllersFeature;
+use Yceruto\BundleFlex\Feature\TwigFeature;
 
 /**
- * @var Yceruto\BundleFlex\Naming\BundleNaming     $naming
- * @var Yceruto\BundleFlex\Template\TemplateHelper $helper
+ * @var Yceruto\BundleFlex\Blueprint\BundleBlueprint $blueprint
+ * @var Yceruto\BundleFlex\Naming\BundleNaming       $naming
+ * @var Yceruto\BundleFlex\Template\TemplateHelper   $helper
  */
+$twig = $blueprint->hasFeature(TwigFeature::NAME);
 $imports = $helper->imports([
     'PHPUnit\Framework\Attributes\DataProvider',
     'Symfony\Bundle\FrameworkBundle\Test\WebTestCase',
@@ -33,8 +36,13 @@ final class HelloControllerTest extends WebTestCase
         $client->request('GET', '/hello/Jane');
 
         self::assertResponseIsSuccessful();
+<?php if ($twig): ?>
+        self::assertResponseHeaderSame('Content-Type', 'text/html; charset=UTF-8');
+        self::assertStringContainsString(<?= $helper->php($greeting.' Jane!') ?>, (string) $client->getResponse()->getContent());
+<?php else: ?>
         self::assertResponseHeaderSame('Content-Type', 'text/plain; charset=UTF-8');
         self::assertSame(<?= $helper->php($greeting.' Jane!') ?>, $client->getResponse()->getContent());
+<?php endif ?>
     }
 
     public function testGreetsTheWorldByDefault(): void
@@ -44,7 +52,11 @@ final class HelloControllerTest extends WebTestCase
         $client->request('GET', '/hello');
 
         self::assertResponseIsSuccessful();
+<?php if ($twig): ?>
+        self::assertStringContainsString(<?= $helper->php($greeting.' '.ControllersFeature::DEFAULT_NAME.'!') ?>, (string) $client->getResponse()->getContent());
+<?php else: ?>
         self::assertSame(<?= $helper->php($greeting.' '.ControllersFeature::DEFAULT_NAME.'!') ?>, $client->getResponse()->getContent());
+<?php endif ?>
     }
 
     public function testRouteCanBeGenerated(): void
