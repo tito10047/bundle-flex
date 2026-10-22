@@ -35,13 +35,19 @@ final class SemanticConfigFeatureTest extends TestCase
         self::assertTrue($feature->isEnabledByDefault(new FeatureSelection()));
     }
 
-    public function testContributesTheDefinitionAndItsImport(): void
+    public function testContributesTheDefinitionItsUsageAndItsDocumentation(): void
     {
         $blueprint = new BundleBlueprint(OptionsFactory::create(features: ['config' => true]));
 
         (new SemanticConfigFeature())->contribute($blueprint);
 
-        self::assertEquals(['config/definition.php' => new FileTemplate('features/config/definition.php.tpl', 'config/definition.php')], $blueprint->getFiles());
+        self::assertEquals([
+            'config/definition.php' => new FileTemplate('features/config/definition.php.tpl', 'config/definition.php'),
+            'tests/Integration/ConfigurationTest.php' => new FileTemplate('features/config/tests/Integration/ConfigurationTest.php.tpl', 'tests/Integration/ConfigurationTest.php'),
+        ], $blueprint->getFiles());
         self::assertEquals([new Partial('features/config/partials/bundle_configure.php.tpl')], $blueprint->slots->getPartials(Slot::BundleConfigure));
+        self::assertEquals([new Partial('features/config/partials/bundle_load_extension.php.tpl')], $blueprint->slots->getPartials(Slot::BundleLoadExtension));
+        self::assertEquals([new Partial('features/config/partials/readme.md.tpl', priority: SemanticConfigFeature::DOCS_PRIORITY)], $blueprint->slots->getPartials(Slot::ReadmeSections));
+        self::assertEquals([new Partial('features/config/partials/docs.md.tpl', priority: SemanticConfigFeature::DOCS_PRIORITY)], $blueprint->slots->getPartials(Slot::DocsSections));
     }
 }

@@ -105,7 +105,28 @@ final class BundleGeneratorTest extends TestCase
             $blueprint = BundleGenerator::createDefault()->generate(OptionsFactory::create(features: ['config' => true]), $dir);
 
             self::assertSame('acme/blog-bundle', $blueprint->naming->packageName);
-            self::assertSame(['composer.json', 'config/definition.php', 'config/services.php', 'src/AcmeBlogBundle.php'], array_keys(Filesystem::readTree($dir)));
+            self::assertSame([
+                '.editorconfig',
+                '.gitattributes',
+                '.gitignore',
+                'CHANGELOG.md',
+                'LICENSE',
+                'README.md',
+                'composer.json',
+                'config/definition.php',
+                'config/services.php',
+                'docs/index.md',
+                'phpunit.dist.xml',
+                'src/AcmeBlogBundle.php',
+                'src/Exception/ExceptionInterface.php',
+                'src/Exception/InvalidArgumentException.php',
+                'src/Greeter.php',
+                'src/GreeterInterface.php',
+                'tests/App/TestKernel.php',
+                'tests/GreeterTest.php',
+                'tests/Integration/AcmeBlogBundleTest.php',
+                'tests/Integration/ConfigurationTest.php',
+            ], array_keys(Filesystem::readTree($dir)));
 
             /** @var array{name: string, minimum-stability: string} $composer */
             $composer = json_decode((string) file_get_contents($dir.'/composer.json'), true, flags: \JSON_THROW_ON_ERROR);

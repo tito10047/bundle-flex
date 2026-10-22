@@ -27,6 +27,8 @@ namespace <?= $naming->namespace ?>;
 <?= $imports->render() ?>
 
 /**
+ * Entry point of the bundle: loads its configuration and its services into the container of the application.
+ *
  * @see https://symfony.com/doc/current/bundles/best_practices.html
  */
 final class <?= $naming->className ?> extends <?= $imports->name('Symfony\Component\HttpKernel\Bundle\AbstractBundle') ?>
@@ -47,7 +49,7 @@ final class <?= $naming->className ?> extends <?= $imports->name('Symfony\Compon
 
 <?php endif ?>
     /**
-     * @param array<string, mixed> $config
+     * @param array<mixed> $config the processed configuration of the bundle
      */
     public function loadExtension(array $config, <?= $containerConfigurator ?> $container, <?= $containerBuilder ?> $builder): void
     {
