@@ -97,7 +97,8 @@ final class KitchenSinkFeature implements FeatureInterface
         $blueprint->services->addAlias(new ServiceAlias($naming->namespace.'\\Formatter\\FormatterInterface', $alias.'.formatter'));
         $blueprint->services->addAlias(new ServiceAlias($alias.'.default_greeter', $alias.'.greeter', public: true));
 
-        $blueprint->routes->add(new RouteDefinition($alias.'_hello', '/hello/{name}', $alias.'.controller.hello', ['GET', 'HEAD']));
+        $blueprint->routes->add(new RouteDefinition($alias.'_hello', '/hello/{name}', $alias.'.controller.hello', ['GET', 'HEAD'], ['name' => 'World'], ['name' => '\\w+']));
+        $blueprint->routes->add(new RouteDefinition($alias.'_page', '/page/{page}.{_format}', $alias.'.controller.hello::page', defaults: ['page' => 1, '_format' => 'html'], requirements: ['page' => '\\d+', '_format' => 'html|json']));
         $blueprint->routes->add(new RouteDefinition($alias.'_home', '/', $alias.'.controller.hello'));
 
         $blueprint->slots->addValue(ListSlot::BundleUses, 'Symfony\\Component\\DependencyInjection\\Compiler\\PassConfig');

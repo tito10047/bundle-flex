@@ -67,9 +67,45 @@ final class ValueObjectsTest extends TestCase
 
     public function testRouteDefinition(): void
     {
-        $route = new RouteDefinition('acme_hello', '/hello', 'acme.controller', ['GET']);
+        $route = new RouteDefinition('acme_hello', '/hello/{name}', 'acme.controller', ['GET'], ['name' => 'World'], ['name' => '\\w+']);
 
         self::assertSame(['GET'], $route->methods);
+        self::assertSame(['name' => 'World'], $route->defaults);
+        self::assertSame(['name' => '\\w+'], $route->requirements);
+    }
+
+    public function testRouteDefaultsMustBePlaceholders(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The route "acme_hello" has a default value or a requirement for "id", which is not a placeholder of its path "/hello/{name}".');
+
+        new RouteDefinition('acme_hello', '/hello/{name}', 'acme.controller', defaults: ['id' => 1]);
+    }
+
+    public function testRouteRequirementsMustBePlaceholders(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The route "acme_hello" has a default value or a requirement for "id", which is not a placeholder of its path "/hello".');
+
+        new RouteDefinition('acme_hello', '/hello', 'acme.controller', requirements: ['id' => '\\d+']);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideInvalidRequirements(): iterable
+    {
+        yield 'empty' => [''];
+        yield 'invalid' => ['[a-z'];
+    }
+
+    #[DataProvider('provideInvalidRequirements')]
+    public function testRouteRequirementsMustBeValidRegularExpressions(string $requirement): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('The requirement "%s" of the "name" placeholder of route "acme_hello" is not a valid regular expression.', $requirement));
+
+        new RouteDefinition('acme_hello', '/hello/{name}', 'acme.controller', requirements: ['name' => $requirement]);
     }
 
     public function testRoutePathMustBeAbsolute(): void

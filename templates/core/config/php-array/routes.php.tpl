@@ -26,6 +26,12 @@ return [
 <?php if ([] !== $route->methods): ?>
         'methods' => <?= $helper->php($route->methods) ?>,
 <?php endif ?>
+<?php if ([] !== $route->defaults): ?>
+        'defaults' => <?= $helper->php($route->defaults) ?>,
+<?php endif ?>
+<?php if ([] !== $route->requirements): ?>
+        'requirements' => <?= $helper->php($route->requirements) ?>,
+<?php endif ?>
     ],
 <?php endforeach ?>
 ];

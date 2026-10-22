@@ -22,4 +22,12 @@
     methods: <?= $helper->yaml($route->methods) ?>
 
 <?php endif ?>
+<?php if ([] !== $route->defaults): ?>
+    defaults: <?= $helper->yaml($route->defaults) ?>
+
+<?php endif ?>
+<?php if ([] !== $route->requirements): ?>
+    requirements: <?= $helper->yaml($route->requirements) ?>
+
+<?php endif ?>
 <?php endforeach ?>

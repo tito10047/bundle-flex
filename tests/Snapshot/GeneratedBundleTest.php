@@ -199,6 +199,12 @@ final class GeneratedBundleTest extends TestCase
             self::assertSame($route->path, $loaded->getPath(), $name);
             self::assertSame($route->controller, $loaded->getDefault('_controller'), $name);
             self::assertSame($route->methods, $loaded->getMethods(), $name);
+            $defaults = $loaded->getDefaults();
+            ksort($defaults);
+            $expectedDefaults = ['_controller' => $route->controller] + $route->defaults;
+            ksort($expectedDefaults);
+            self::assertSame($expectedDefaults, $defaults, $name);
+            self::assertSame($route->requirements, $loaded->getRequirements(), $name);
         }
     }
 
