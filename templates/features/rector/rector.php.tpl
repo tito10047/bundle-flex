@@ -22,6 +22,9 @@ $preparedSets = ['deadCode', 'codeQuality', 'typeDeclarations', 'privatization',
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+<?php if ($hasPhpUnit): ?>
+use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
+<?php endif ?>
 
 /*
  * Rector configuration: run "composer rector" to list the suggested changes and
@@ -48,4 +51,10 @@ return RectorConfig::configure()
         <?= $set ?>: true,
 <?php endforeach ?>
     )
+<?php if ($hasPhpUnit): ?>
+    ->withSkip([
+        // the tests call the assertions of PHPUnit statically (self::assertSame()), as PHPStan's strict rules require
+        PreferPHPUnitThisCallRector::class,
+    ])
+<?php endif ?>
 ;

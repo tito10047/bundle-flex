@@ -143,7 +143,9 @@ template with a `/** @var ... */` block that lists the variables it uses.
   (`phpdoc_to_comment`).
 - Generated code must also pass PHPStan (level max, strict and deprecation
   rules) and Rector without changes, on Symfony 7.4 and 8.x. The end-to-end
-  tests check it (see below).
+  tests check it (see below). Generated tests call the PHPUnit assertions
+  statically (`self::assertSame()`), as the strict rules require; `rector.php`
+  skips the Rector rule that would turn them into `$this->assertSame()`.
 
 ## The contract: `BundleBlueprint`
 

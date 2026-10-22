@@ -29,7 +29,7 @@ final class <?= $naming->className ?>Test extends <?= $imports->name('Symfony\Bu
 {
     public function testBundleIsRegistered(): void
     {
-        $this->assertInstanceOf(<?= $naming->className ?>::class, self::bootKernel()->getBundle(<?= $helper->php($naming->className) ?>));
+        self::assertInstanceOf(<?= $naming->className ?>::class, self::bootKernel()->getBundle(<?= $helper->php($naming->className) ?>));
     }
 
     public function testGreeterCanBeAutowired(): void
@@ -38,23 +38,23 @@ final class <?= $naming->className ?>Test extends <?= $imports->name('Symfony\Bu
 
         $greeter = self::getContainer()->get('test.'.<?= $interface ?>::class);
 
-        $this->assertInstanceOf(Greeter::class, $greeter);
-        $this->assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING.' Jane!') ?>, $greeter->greet('Jane'));
+        self::assertInstanceOf(Greeter::class, $greeter);
+        self::assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING.' Jane!') ?>, $greeter->greet('Jane'));
     }
 
     public function testGreetingParameterHasADefaultValue(): void
     {
         self::bootKernel();
 
-        $this->assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING) ?>, self::getContainer()->getParameter(<?= $helper->php(GreeterContributor::greetingParameter($naming)) ?>));
+        self::assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING) ?>, self::getContainer()->getParameter(<?= $helper->php(GreeterContributor::greetingParameter($naming)) ?>));
     }
 
     public function testServicesAreNotPublic(): void
     {
         $container = self::bootKernel()->getContainer();
 
-        $this->assertFalse($container->has(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>));
-        $this->assertFalse($container->has(<?= $interface ?>::class));
+        self::assertFalse($container->has(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>));
+        self::assertFalse($container->has(<?= $interface ?>::class));
     }
 
     public function testServicesAreDefinedExplicitly(): void
@@ -65,18 +65,18 @@ final class <?= $naming->className ?>Test extends <?= $imports->name('Symfony\Bu
             'kernel.debug' => false,
         ]));
         $extension = (new <?= $naming->className ?>())->getContainerExtension();
-        $this->assertInstanceOf(<?= $imports->name('Symfony\Component\DependencyInjection\Extension\ExtensionInterface') ?>::class, $extension);
+        self::assertInstanceOf(<?= $imports->name('Symfony\Component\DependencyInjection\Extension\ExtensionInterface') ?>::class, $extension);
 
         $extension->load([], $container);
 
         $ids = array_filter(array_keys($container->getDefinitions()), static fn (string $id): bool => str_starts_with(ltrim($id, '.'), <?= $helper->php($naming->alias.'.') ?>));
-        $this->assertNotEmpty($ids);
+        self::assertNotEmpty($ids);
         foreach ($ids as $id) {
             $definition = $container->getDefinition($id);
-            $this->assertFalse($definition->isAutowired(), \sprintf('The "%s" service must not be autowired.', $id));
-            $this->assertFalse($definition->isAutoconfigured(), \sprintf('The "%s" service must not be autoconfigured.', $id));
+            self::assertFalse($definition->isAutowired(), \sprintf('The "%s" service must not be autowired.', $id));
+            self::assertFalse($definition->isAutoconfigured(), \sprintf('The "%s" service must not be autoconfigured.', $id));
         }
 
-        $this->assertSame(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>, (string) $container->getAlias(<?= $interface ?>::class));
+        self::assertSame(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>, (string) $container->getAlias(<?= $interface ?>::class));
     }
 }

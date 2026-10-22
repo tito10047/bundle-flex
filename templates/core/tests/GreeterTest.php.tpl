@@ -19,12 +19,12 @@ final class GreeterTest extends TestCase
 {
     public function testGreetsTheGivenName(): void
     {
-        $this->assertSame('Hello Jane!', (new Greeter('Hello'))->greet('Jane'));
+        self::assertSame('Hello Jane!', (new Greeter('Hello'))->greet('Jane'));
     }
 
     public function testTrimsTheName(): void
     {
-        $this->assertSame('Hi Jane!', (new Greeter('Hi'))->greet("  Jane\n"));
+        self::assertSame('Hi Jane!', (new Greeter('Hi'))->greet("  Jane\n"));
     }
 
     #[DataProvider('provideEmptyNames')]
