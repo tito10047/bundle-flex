@@ -37,6 +37,11 @@ final class EnumsAndAuthorTest extends TestCase
         self::assertSame(License::Mit, License::fromIdentifier('mit'));
         self::assertSame(License::Apache2, License::fromIdentifier('APACHE-2.0'));
         self::assertNull(License::fromIdentifier('WTFPL'));
+        self::assertSame('MIT License', License::Mit->getName());
+        self::assertSame('GNU Lesser General Public License v3.0 or later', License::Lgpl3OrLater->getName());
+        foreach (License::cases() as $license) {
+            self::assertNotSame('', $license->getName());
+        }
         self::assertSame(['MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'GPL-3.0-or-later', 'LGPL-3.0-or-later', 'MPL-2.0', 'proprietary'], License::identifiers());
     }
 

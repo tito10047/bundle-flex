@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Yceruto\BundleFlex\Blueprint\BundleBlueprint;
 use Yceruto\BundleFlex\Blueprint\FileTemplate;
 use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
+use Yceruto\BundleFlex\Contributor\Core\DocumentationContributor;
 use Yceruto\BundleFlex\Contributor\Core\GreeterContributor;
 use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
@@ -36,6 +37,7 @@ final class CoreContributorsTest extends TestCase
             BundleClassContributor::class,
             GreeterContributor::class,
             TestsContributor::class,
+            DocumentationContributor::class,
             LicenseContributor::class,
         ], array_map(static fn (object $contributor): string => $contributor::class, $contributors));
 

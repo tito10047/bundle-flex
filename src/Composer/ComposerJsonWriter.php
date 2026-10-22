@@ -127,7 +127,7 @@ final class ComposerJsonWriter
 
         if ([] !== $qa = $composer->getQaScriptNames()) {
             $scripts[ComposerManifest::QA_SCRIPT] = array_map(static fn (string $name): string => '@'.$name, $qa);
-            $descriptions[ComposerManifest::QA_SCRIPT] = 'Runs every quality check';
+            $descriptions[ComposerManifest::QA_SCRIPT] = ComposerManifest::QA_SCRIPT_DESCRIPTION;
         }
 
         if ([] === $scripts) {

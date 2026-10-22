@@ -32,6 +32,23 @@ enum License: string
     case Proprietary = 'proprietary';
 
     /**
+     * Human-readable name, e.g. "MIT License".
+     */
+    public function getName(): string
+    {
+        return match ($this) {
+            self::Mit => 'MIT License',
+            self::Apache2 => 'Apache License 2.0',
+            self::Bsd2Clause => 'BSD 2-Clause License',
+            self::Bsd3Clause => 'BSD 3-Clause License',
+            self::Gpl3OrLater => 'GNU General Public License v3.0 or later',
+            self::Lgpl3OrLater => 'GNU Lesser General Public License v3.0 or later',
+            self::Mpl2 => 'Mozilla Public License 2.0',
+            self::Proprietary => 'Proprietary',
+        };
+    }
+
+    /**
      * Case-insensitive lookup by SPDX identifier.
      */
     public static function fromIdentifier(string $identifier): ?self
