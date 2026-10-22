@@ -38,7 +38,9 @@ final class GreetingHeaderListenerTest extends <?= $imports->name('Symfony\Bundl
         $registered = [];
         foreach ($dispatcher->getListeners(<?= $kernelEvents ?>::RESPONSE) as $listener) {
             if (\is_array($listener) && $listener[0] instanceof <?= $listener ?>) {
-                $registered[] = [$listener[1], $dispatcher->getListenerPriority(<?= $kernelEvents ?>::RESPONSE, $listener)];
+                // Symfony 7.4 documents the listeners as "callable[]|callable": the callable is rebuilt for
+                // the static analysis
+                $registered[] = [$listener[1], $dispatcher->getListenerPriority(<?= $kernelEvents ?>::RESPONSE, [$listener[0], 'onKernelResponse'])];
             }
         }
 
