@@ -97,14 +97,30 @@ final class FeatureRegistryTest extends TestCase
         $registry = FeatureRegistry::createDefault();
 
         self::assertInstanceOf(SemanticConfigFeature::class, $registry->get(SemanticConfigFeature::NAME));
+        self::assertInstanceOf(ControllersFeature::class, $registry->get(ControllersFeature::NAME));
+        self::assertInstanceOf(TwigFeature::class, $registry->get(TwigFeature::NAME));
+        self::assertInstanceOf(TranslationsFeature::class, $registry->get(TranslationsFeature::NAME));
         self::assertInstanceOf(CommandFeature::class, $registry->get(CommandFeature::NAME));
         self::assertInstanceOf(EventListenerFeature::class, $registry->get(EventListenerFeature::NAME));
         self::assertInstanceOf(DoctrineFeature::class, $registry->get(DoctrineFeature::NAME));
-        // features depending on the answers of other features come after them
-        $names = array_keys(iterator_to_array($registry));
-        foreach ([[ControllersFeature::NAME, TwigFeature::NAME], [TwigFeature::NAME, TranslationsFeature::NAME], [TranslationsFeature::NAME, PublicAssetsFeature::NAME], [PublicAssetsFeature::NAME, UxFeature::NAME]] as [$before, $after]) {
-            self::assertLessThan(array_search($after, $names, true), array_search($before, $names, true), $before.' must be registered before '.$after);
-        }
+        self::assertInstanceOf(PublicAssetsFeature::class, $registry->get(PublicAssetsFeature::NAME));
+        self::assertInstanceOf(UxFeature::class, $registry->get(UxFeature::NAME));
+        // the order of the questions and of the contributions; a feature reading the answers of other features
+        // comes after them (twig defaults to the answer of controllers)
+        self::assertSame(
+            [
+                SemanticConfigFeature::NAME,
+                ControllersFeature::NAME,
+                TwigFeature::NAME,
+                TranslationsFeature::NAME,
+                CommandFeature::NAME,
+                EventListenerFeature::NAME,
+                DoctrineFeature::NAME,
+                PublicAssetsFeature::NAME,
+                UxFeature::NAME,
+            ],
+            array_map(static fn (FeatureInterface $feature): string => $feature->getName(), $registry->getByGroup(FeatureGroup::Features)),
+        );
         // quality assurance features come last, in this order: they adapt to everything contributed before them
         self::assertSame(
             [PhpStanFeature::NAME, PhpCsFixerFeature::NAME, RectorFeature::NAME, GitHubActionsFeature::NAME],
