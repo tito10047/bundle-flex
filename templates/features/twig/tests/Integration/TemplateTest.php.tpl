@@ -1,9 +1,11 @@
 <?php
+use Yceruto\BundleFlex\Feature\TranslationsFeature;
 use Yceruto\BundleFlex\Feature\TwigFeature;
 
 /**
- * @var Yceruto\BundleFlex\Naming\BundleNaming     $naming
- * @var Yceruto\BundleFlex\Template\TemplateHelper $helper
+ * @var Yceruto\BundleFlex\Blueprint\BundleBlueprint $blueprint
+ * @var Yceruto\BundleFlex\Naming\BundleNaming       $naming
+ * @var Yceruto\BundleFlex\Template\TemplateHelper   $helper
  */
 $imports = $helper->imports([
     'Symfony\Bundle\FrameworkBundle\Test\KernelTestCase',
@@ -31,6 +33,9 @@ final class TemplateTest extends KernelTestCase
         $html = $this->getTwig()->render(<?= $helper->php($template) ?>, ['greeting' => 'Hello Jane!']);
 
         self::assertStringContainsString('Hello Jane!', $html);
+<?php if ($blueprint->hasFeature(TranslationsFeature::NAME)): ?>
+        self::assertStringContainsString(<?= $helper->php(TranslationsFeature::TITLE_MESSAGE) ?>, $html);
+<?php endif ?>
     }
 
     public function testEscapesTheGreeting(): void
