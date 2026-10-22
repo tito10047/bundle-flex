@@ -11,6 +11,7 @@ $imports = $helper->imports([
     GreeterContributor::interfaceName($naming),
     'PHPUnit\Framework\Attributes\DataProvider',
     'Symfony\Bundle\FrameworkBundle\Test\KernelTestCase',
+    'Symfony\Component\Config\Definition\ConfigurationInterface',
     'Symfony\Component\Config\Definition\Exception\InvalidConfigurationException',
     'Symfony\Component\Config\Definition\Processor',
     'Symfony\Component\DependencyInjection\ContainerBuilder',
@@ -32,12 +33,12 @@ final class ConfigurationTest extends KernelTestCase
 {
     public function testDefaultConfiguration(): void
     {
-        self::assertSame(['greeting' => <?= $helper->php($greeting) ?>], self::processConfiguration([]));
+        $this->assertSame(['greeting' => <?= $helper->php($greeting) ?>], $this->processConfiguration([]));
     }
 
     public function testConfigurationIsMerged(): void
     {
-        self::assertSame(['greeting' => 'Hi'], self::processConfiguration([['greeting' => 'Hey'], ['greeting' => 'Hi']]));
+        $this->assertSame(['greeting' => 'Hi'], $this->processConfiguration([['greeting' => 'Hey'], ['greeting' => 'Hi']]));
     }
 
     /**
@@ -49,7 +50,7 @@ final class ConfigurationTest extends KernelTestCase
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage($expectedMessage);
 
-        self::processConfiguration([$config]);
+        $this->processConfiguration([$config]);
     }
 
     /**
@@ -67,11 +68,11 @@ final class ConfigurationTest extends KernelTestCase
         self::bootKernel(['extension_configs' => [<?= $helper->php($alias) ?> => ['greeting' => 'Hi']]]);
         $container = self::getContainer();
 
-        self::assertSame('Hi', $container->getParameter(<?= $helper->php(GreeterContributor::greetingParameter($naming)) ?>));
+        $this->assertSame('Hi', $container->getParameter(<?= $helper->php(GreeterContributor::greetingParameter($naming)) ?>));
 
         $greeter = $container->get('test.'.<?= $imports->name(GreeterContributor::interfaceName($naming)) ?>::class);
-        self::assertInstanceOf(<?= $imports->name(GreeterContributor::interfaceName($naming)) ?>::class, $greeter);
-        self::assertSame('Hi Jane!', $greeter->greet('Jane'));
+        $this->assertInstanceOf(<?= $imports->name(GreeterContributor::interfaceName($naming)) ?>::class, $greeter);
+        $this->assertSame('Hi Jane!', $greeter->greet('Jane'));
     }
 
     /**
@@ -94,13 +95,13 @@ final class ConfigurationTest extends KernelTestCase
      *
      * @return array<mixed>
      */
-    private static function processConfiguration(array $configs): array
+    private function processConfiguration(array $configs): array
     {
         $extension = (new <?= $naming->className ?>())->getContainerExtension();
-        self::assertInstanceOf(ConfigurationExtensionInterface::class, $extension);
+        $this->assertInstanceOf(ConfigurationExtensionInterface::class, $extension);
 
         $configuration = $extension->getConfiguration([], new ContainerBuilder(new ParameterBag(['kernel.environment' => 'test'])));
-        self::assertNotNull($configuration);
+        $this->assertInstanceOf(ConfigurationInterface::class, $configuration);
 
         return (new Processor())->processConfiguration($configuration, $configs);
     }

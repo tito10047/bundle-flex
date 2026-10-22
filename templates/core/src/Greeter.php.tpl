@@ -16,13 +16,13 @@ use <?= $naming->namespace ?>\Exception\InvalidArgumentException;
  *
  * Registered as the "<?= $naming->alias ?>.greeter" service.
  */
-final class Greeter implements GreeterInterface
+final readonly class Greeter implements GreeterInterface
 {
     /**
      * @param string $greeting the word people are greeted with, e.g. "Hello"
      */
     public function __construct(
-        private readonly string $greeting,
+        private string $greeting,
     ) {
     }
 

@@ -11,6 +11,7 @@ $imports = $helper->imports([
     GreeterContributor::interfaceName($naming),
     'Symfony\Bundle\FrameworkBundle\Test\KernelTestCase',
     'Symfony\Component\DependencyInjection\ContainerBuilder',
+    'Symfony\Component\DependencyInjection\Extension\ExtensionInterface',
     'Symfony\Component\DependencyInjection\ParameterBag\ParameterBag',
 ], $naming->testsNamespace.'\Integration');
 $interface = $imports->name(GreeterContributor::interfaceName($naming));
@@ -28,7 +29,7 @@ final class <?= $naming->className ?>Test extends <?= $imports->name('Symfony\Bu
 {
     public function testBundleIsRegistered(): void
     {
-        self::assertInstanceOf(<?= $naming->className ?>::class, self::bootKernel()->getBundle(<?= $helper->php($naming->className) ?>));
+        $this->assertInstanceOf(<?= $naming->className ?>::class, self::bootKernel()->getBundle(<?= $helper->php($naming->className) ?>));
     }
 
     public function testGreeterCanBeAutowired(): void
@@ -37,23 +38,23 @@ final class <?= $naming->className ?>Test extends <?= $imports->name('Symfony\Bu
 
         $greeter = self::getContainer()->get('test.'.<?= $interface ?>::class);
 
-        self::assertInstanceOf(Greeter::class, $greeter);
-        self::assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING.' Jane!') ?>, $greeter->greet('Jane'));
+        $this->assertInstanceOf(Greeter::class, $greeter);
+        $this->assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING.' Jane!') ?>, $greeter->greet('Jane'));
     }
 
     public function testGreetingParameterHasADefaultValue(): void
     {
         self::bootKernel();
 
-        self::assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING) ?>, self::getContainer()->getParameter(<?= $helper->php(GreeterContributor::greetingParameter($naming)) ?>));
+        $this->assertSame(<?= $helper->php(GreeterContributor::DEFAULT_GREETING) ?>, self::getContainer()->getParameter(<?= $helper->php(GreeterContributor::greetingParameter($naming)) ?>));
     }
 
     public function testServicesAreNotPublic(): void
     {
         $container = self::bootKernel()->getContainer();
 
-        self::assertFalse($container->has(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>));
-        self::assertFalse($container->has(<?= $interface ?>::class));
+        $this->assertFalse($container->has(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>));
+        $this->assertFalse($container->has(<?= $interface ?>::class));
     }
 
     public function testServicesAreDefinedExplicitly(): void
@@ -64,18 +65,18 @@ final class <?= $naming->className ?>Test extends <?= $imports->name('Symfony\Bu
             'kernel.debug' => false,
         ]));
         $extension = (new <?= $naming->className ?>())->getContainerExtension();
-        self::assertNotNull($extension);
+        $this->assertInstanceOf(<?= $imports->name('Symfony\Component\DependencyInjection\Extension\ExtensionInterface') ?>::class, $extension);
 
         $extension->load([], $container);
 
         $ids = array_filter(array_keys($container->getDefinitions()), static fn (string $id): bool => str_starts_with(ltrim($id, '.'), <?= $helper->php($naming->alias.'.') ?>));
-        self::assertNotEmpty($ids);
+        $this->assertNotEmpty($ids);
         foreach ($ids as $id) {
             $definition = $container->getDefinition($id);
-            self::assertFalse($definition->isAutowired(), \sprintf('The "%s" service must not be autowired.', $id));
-            self::assertFalse($definition->isAutoconfigured(), \sprintf('The "%s" service must not be autoconfigured.', $id));
+            $this->assertFalse($definition->isAutowired(), \sprintf('The "%s" service must not be autowired.', $id));
+            $this->assertFalse($definition->isAutoconfigured(), \sprintf('The "%s" service must not be autoconfigured.', $id));
         }
 
-        self::assertSame(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>, (string) $container->getAlias(<?= $interface ?>::class));
+        $this->assertSame(<?= $helper->php(GreeterContributor::serviceId($naming)) ?>, (string) $container->getAlias(<?= $interface ?>::class));
     }
 }
