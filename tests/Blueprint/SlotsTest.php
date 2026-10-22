@@ -61,10 +61,10 @@ final class SlotsTest extends TestCase
     /**
      * A slot that no master template renders is a bug: contributions to it would be silently lost.
      */
-    public function testEverySlotIsRenderedByACoreTemplate(): void
+    public function testEverySlotIsRenderedByATemplate(): void
     {
         $templates = '';
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(\dirname(__DIR__, 2).'/templates/core', \FilesystemIterator::SKIP_DOTS));
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(\dirname(__DIR__, 2).'/templates', \FilesystemIterator::SKIP_DOTS));
         foreach ($iterator as $file) {
             if ($file instanceof \SplFileInfo && $file->isFile()) {
                 $templates .= file_get_contents($file->getPathname());

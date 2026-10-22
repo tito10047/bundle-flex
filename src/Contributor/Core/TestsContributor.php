@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Yceruto\BundleFlex\Contributor\Core;
 
 use Yceruto\BundleFlex\Blueprint\BundleBlueprint;
+use Yceruto\BundleFlex\Blueprint\ComposerManifest;
 use Yceruto\BundleFlex\Blueprint\Constraint;
 use Yceruto\BundleFlex\Blueprint\ListSlot;
 use Yceruto\BundleFlex\Contributor\ContributorInterface;
@@ -30,12 +31,10 @@ use Yceruto\BundleFlex\Contributor\ContributorInterface;
 final class TestsContributor implements ContributorInterface
 {
     /**
-     * PHPUnit 11.5 is the last version supporting PHP 8.2, PHPUnit 12 requires PHP 8.3
-     * and PHPUnit 13 requires PHP 8.4: Composer installs the latest one the PHP version supports.
+     * PHPUnit 11.5 is the last version supporting PHP 8.2, PHPUnit 12 requires PHP 8.3:
+     * Composer installs the latest one the PHP version supports.
      */
-    public const PHPUNIT_CONSTRAINT = '^11.5 || ^12.0 || ^13.0';
-
-    public const TEST_SCRIPT = 'test';
+    public const PHPUNIT_CONSTRAINT = '^11.5 || ^12.0';
 
     public function contribute(BundleBlueprint $blueprint): void
     {
@@ -44,7 +43,7 @@ final class TestsContributor implements ContributorInterface
         $blueprint->composer->requireDev('phpunit/phpunit', self::PHPUNIT_CONSTRAINT);
         // the test kernel (MicroKernelTrait) and KernelTestCase
         $blueprint->composer->requireDev('symfony/framework-bundle', Constraint::SYMFONY);
-        $blueprint->composer->addScript(self::TEST_SCRIPT, 'phpunit', 'Runs the tests (PHPUnit)', qa: true);
+        $blueprint->composer->addScript(ComposerManifest::TEST_SCRIPT, 'phpunit', 'Runs the tests (PHPUnit)', qa: true);
 
         $blueprint->addFile('core/phpunit.dist.xml.tpl', 'phpunit.dist.xml');
         $blueprint->addFile('core/tests/App/TestKernel.php.tpl', 'tests/App/TestKernel.php');

@@ -518,10 +518,10 @@ a PHP 8.2 container with `composer update --prefer-lowest`).
 
 ### The test suite of the generated bundle
 
-- `phpunit/phpunit` is required as `^11.5 || ^12.0 || ^13.0`: Composer installs
-  the latest version the PHP version supports (11.5 on PHP 8.2, 12 on PHP 8.3,
-  13 on PHP 8.4+). `phpunit.dist.xml` must stay valid for all of them, without
-  PHPUnit deprecations.
+- `phpunit/phpunit` is required as `^11.5 || ^12.0`: Composer installs the
+  latest version the PHP version supports (11.5 on PHP 8.2, 12 on PHP 8.3+).
+  `phpunit.dist.xml` must stay valid for both (and for PHPUnit 13, which only
+  deprecates `executionOrder="depends"`), without PHPUnit deprecations.
 - Deprecations: `failOnDeprecation` with `<source ignoreIndirectDeprecations="true"
   ignoreSuppressionOfDeprecations="true">` and `trigger_deprecation` declared as
   a `<deprecationTrigger>`. Only the deprecations caused by the code of the

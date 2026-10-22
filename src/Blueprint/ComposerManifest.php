@@ -24,6 +24,9 @@ final class ComposerManifest
     /** Aggregated script running every script flagged with "qa: true". */
     public const QA_SCRIPT = 'qa';
 
+    /** Script running the test suite: the CI workflow runs it on every PHP and Symfony version it tests. */
+    public const TEST_SCRIPT = 'test';
+
     /** Description of the aggregated "qa" script. */
     public const QA_SCRIPT_DESCRIPTION = 'Runs every quality check';
 
