@@ -114,10 +114,12 @@ jobs:
             symfony: '7.4.*'
             dependencies: lowest
             scripts: test
+          # "qa" runs the tests first, then the quality checks (only with the latest versions:
+          # PHPStan fails on the lowest dependencies of Symfony 7.4)
           - php: '8.5'
             symfony: '8.1.*'
             dependencies: highest
-            scripts: test qa
+            scripts: qa
           - preset: minimal
             all-features: '0'
           - preset: all

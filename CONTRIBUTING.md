@@ -577,7 +577,7 @@ fails the run.
 ```console
 $ git clone -b feat/symfony-8 https://github.com/tito10047/bundle-skeleton /tmp/skeleton
 $ E2E_SKELETON_DIR=/tmp/skeleton BUNDLE_FLEX_NAME=acme/blog-bundle BUNDLE_FLEX_ALL=1 \
-  BUNDLE_FLEX_CONFIG_FORMAT=yaml E2E_SYMFONY='8.1.*' E2E_SCRIPTS='test qa' \
+  BUNDLE_FLEX_CONFIG_FORMAT=yaml E2E_SYMFONY='8.1.*' E2E_SCRIPTS='qa' \
   tests/e2e/run.sh /tmp/e2e/blog-bundle
 ```
 
@@ -587,7 +587,7 @@ $ E2E_SKELETON_DIR=/tmp/skeleton BUNDLE_FLEX_NAME=acme/blog-bundle BUNDLE_FLEX_A
 | `E2E_PLUGIN_VERSION` | version given to the working copy; it must satisfy the skeleton's constraint (default: `1.0.0`) |
 | `E2E_SYMFONY` | Symfony versions to install, e.g. `7.4.*`, with `SYMFONY_REQUIRE` and a global Symfony Flex like the generated CI |
 | `E2E_DEPENDENCIES` | `highest` (default) or `lowest` |
-| `E2E_SCRIPTS` | scripts of the bundle to run (default: `test qa`) |
+| `E2E_SCRIPTS` | scripts of the bundle to run (default: `qa`, which runs the tests first) |
 | `BUNDLE_FLEX_*` | the answers, see above |
 
 Nothing test-specific may leak into the generated `composer.json`, so neither
@@ -609,7 +609,7 @@ to its main repository by absolute path).
 
 The CI runs it for both feature presets (`BUNDLE_FLEX_ALL=0` and `1`) in each
 configuration format: on PHP 8.2 with Symfony 7.4 and the lowest dependencies
-(`test`), and on PHP 8.5 with Symfony 8.1 (`test qa`). The skeleton repository
+(`test`), and on PHP 8.5 with Symfony 8.1 (`qa`). The skeleton repository
 and branch can be changed with the `workflow_dispatch` inputs or the
 `SKELETON_REPOSITORY` and `SKELETON_REF` repository variables.
 

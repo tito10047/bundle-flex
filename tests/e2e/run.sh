@@ -19,8 +19,8 @@
 #   E2E_SYMFONY              Symfony versions to install, e.g. "7.4.*" (SYMFONY_REQUIRE with
 #                            Symfony Flex, as in the generated CI); default: the latest ones
 #   E2E_DEPENDENCIES         "highest" (default) or "lowest" (composer update --prefer-lowest)
-#   E2E_SCRIPTS              Composer scripts of the bundle to run, in order (default: "test qa");
-#                            a missing script fails the run
+#   E2E_SCRIPTS              Composer scripts of the bundle to run, in order (default: "qa", which runs
+#                            the tests first); a missing script fails the run
 #
 # The plugin is copied without vendor/ (tracked and untracked files, .gitignore applies);
 # the skeleton is exported with "git archive", so its export-ignore rules apply as for
@@ -43,7 +43,7 @@ skeleton_ref=${E2E_SKELETON_REF:-feat/symfony-8}
 plugin_version=${E2E_PLUGIN_VERSION:-1.0.0}
 symfony=${E2E_SYMFONY:-}
 dependencies=${E2E_DEPENDENCIES:-highest}
-read -r -a scripts <<< "${E2E_SCRIPTS-test qa}"
+read -r -a scripts <<< "${E2E_SCRIPTS-qa}"
 
 fail() {
     if [[ -n ${GITHUB_ACTIONS:-} ]]; then echo "::error::e2e: $*"; else echo "e2e: error: $*" >&2; fi
