@@ -1,0 +1,16 @@
+{#
+ # Greets people, rendered by Acme\WebPhpBundle\Controller\HelloController.
+ #
+ # Variables:
+ #   greeting  string  the greeting, e.g. "Hello Jane!"
+ #
+ # It extends no layout, so applications can display it anywhere. Override it in the
+ # templates/bundles/AcmeWebPhpBundle/hello.html.twig file of your application,
+ # or only its "title" block by extending '@!AcmeWebPhp/hello.html.twig'.
+ #}
+<link rel="stylesheet" href="{{ asset('bundles/acmewebphp/css/acme-web-php.css') }}">
+<section class="acme-web-php-hello" {{ stimulus_controller('acme/web-php-bundle/hello') }}>
+    <h1 class="acme-web-php-hello__title">{% block title %}{{ 'Welcome!'|trans({}, 'AcmeWebPhp') }}{% endblock %}</h1>
+    <p class="acme-web-php-hello__greeting">{{ greeting }}</p>
+    <button type="button" class="acme-web-php-hello__close" {{ stimulus_action('acme/web-php-bundle/hello', 'close') }}>{{ 'Close'|trans({}, 'AcmeWebPhp') }}</button>
+</section>

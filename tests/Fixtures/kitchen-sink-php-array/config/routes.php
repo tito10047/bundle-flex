@@ -16,6 +16,14 @@ return [
         'path' => '/hello/{name}',
         'controller' => 'acme_php_array_kitchen_sink.controller.hello',
         'methods' => ['GET', 'HEAD'],
+        'defaults' => ['name' => 'World'],
+        'requirements' => ['name' => '\\w+'],
+    ],
+    'acme_php_array_kitchen_sink_page' => [
+        'path' => '/page/{page}.{_format}',
+        'controller' => 'acme_php_array_kitchen_sink.controller.hello::page',
+        'defaults' => ['page' => 1, '_format' => 'html'],
+        'requirements' => ['page' => '\\d+', '_format' => 'html|json'],
     ],
     'acme_php_array_kitchen_sink_home' => [
         'path' => '/',

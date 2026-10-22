@@ -1,0 +1,24 @@
+# Services are defined explicitly: no autowiring, no autoconfiguration, private by default,
+# with ids prefixed by "my_vendor_web_yaml." and aliases for autowiring.
+#
+# See https://symfony.com/doc/current/bundles/best_practices.html#services
+
+parameters:
+    my_vendor_web_yaml.greeting: 'Hello'
+
+services:
+    my_vendor_web_yaml.greeter:
+        class: MyVendor\WebYamlBundle\Greeter
+        arguments:
+            - '%my_vendor_web_yaml.greeting%'
+
+    my_vendor_web_yaml.controller.hello:
+        class: MyVendor\WebYamlBundle\Controller\HelloController
+        arguments:
+            - '@my_vendor_web_yaml.greeter'
+            - '@twig'
+        tags:
+            - { name: 'controller.service_arguments' }
+
+    MyVendor\WebYamlBundle\GreeterInterface:
+        alias: my_vendor_web_yaml.greeter

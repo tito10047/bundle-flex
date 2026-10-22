@@ -1,0 +1,22 @@
+{
+    "name": "@acme/web-php-bundle",
+    "description": "AcmeWebPhpBundle for Symfony",
+    "version": "1.0.0",
+    "license": "MIT",
+    "type": "module",
+    "symfony": {
+        "controllers": {
+            "hello": {
+                "main": "src/hello_controller.js",
+                "fetch": "lazy",
+                "enabled": true
+            }
+        },
+        "importmap": {
+            "@hotwired/stimulus": "^3.0.0"
+        }
+    },
+    "peerDependencies": {
+        "@hotwired/stimulus": "^3.0.0"
+    }
+}

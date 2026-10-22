@@ -1,0 +1,16 @@
+{#
+ # Greets people, rendered by MyVendor\EverythingYamlBundle\Controller\HelloController.
+ #
+ # Variables:
+ #   greeting  string  the greeting, e.g. "Hello Jane!"
+ #
+ # It extends no layout, so applications can display it anywhere. Override it in the
+ # templates/bundles/MyVendorEverythingYamlBundle/hello.html.twig file of your application,
+ # or only its "title" block by extending '@!MyVendorEverythingYaml/hello.html.twig'.
+ #}
+<link rel="stylesheet" href="{{ asset('bundles/myvendoreverythingyaml/css/my-vendor-everything-yaml.css') }}">
+<section class="my-vendor-everything-yaml-hello" {{ stimulus_controller('my-vendor/everything-yaml-bundle/hello') }}>
+    <h1 class="my-vendor-everything-yaml-hello__title">{% block title %}{{ 'Welcome!'|trans({}, 'MyVendorEverythingYaml') }}{% endblock %}</h1>
+    <p class="my-vendor-everything-yaml-hello__greeting">{{ greeting }}</p>
+    <button type="button" class="my-vendor-everything-yaml-hello__close" {{ stimulus_action('my-vendor/everything-yaml-bundle/hello', 'close') }}>{{ 'Close'|trans({}, 'MyVendorEverythingYaml') }}</button>
+</section>

@@ -1,0 +1,35 @@
+# Services are defined explicitly: no autowiring, no autoconfiguration, private by default,
+# with ids prefixed by "my_vendor_everything_yaml." and aliases for autowiring.
+#
+# See https://symfony.com/doc/current/bundles/best_practices.html#services
+
+services:
+    my_vendor_everything_yaml.greeter:
+        class: MyVendor\EverythingYamlBundle\Greeter
+        arguments:
+            - '%my_vendor_everything_yaml.greeting%'
+
+    my_vendor_everything_yaml.controller.hello:
+        class: MyVendor\EverythingYamlBundle\Controller\HelloController
+        arguments:
+            - '@my_vendor_everything_yaml.greeter'
+            - '@twig'
+        tags:
+            - { name: 'controller.service_arguments' }
+
+    my_vendor_everything_yaml.command.hello:
+        class: MyVendor\EverythingYamlBundle\Command\HelloCommand
+        arguments:
+            - '@my_vendor_everything_yaml.greeter'
+        tags:
+            - { name: 'console.command', command: 'my-vendor-everything-yaml:hello' }
+
+    my_vendor_everything_yaml.event_listener.greeting_header:
+        class: MyVendor\EverythingYamlBundle\EventListener\GreetingHeaderListener
+        arguments:
+            - '@my_vendor_everything_yaml.greeter'
+        tags:
+            - { name: 'kernel.event_listener', event: 'kernel.response', method: 'onKernelResponse', priority: 0 }
+
+    MyVendor\EverythingYamlBundle\GreeterInterface:
+        alias: my_vendor_everything_yaml.greeter

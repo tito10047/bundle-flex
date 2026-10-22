@@ -1,0 +1,16 @@
+# Services are defined explicitly: no autowiring, no autoconfiguration, private by default,
+# with ids prefixed by "acme_translations." and aliases for autowiring.
+#
+# See https://symfony.com/doc/current/bundles/best_practices.html#services
+
+parameters:
+    acme_translations.greeting: 'Hello'
+
+services:
+    acme_translations.greeter:
+        class: Acme\TranslationsBundle\Greeter
+        arguments:
+            - '%acme_translations.greeting%'
+
+    Acme\TranslationsBundle\GreeterInterface:
+        alias: acme_translations.greeter

@@ -1,0 +1,16 @@
+{#
+ # Greets people, rendered by Acme\EverythingPhpArrayBundle\Controller\HelloController.
+ #
+ # Variables:
+ #   greeting  string  the greeting, e.g. "Hello Jane!"
+ #
+ # It extends no layout, so applications can display it anywhere. Override it in the
+ # templates/bundles/AcmeEverythingPhpArrayBundle/hello.html.twig file of your application,
+ # or only its "title" block by extending '@!AcmeEverythingPhpArray/hello.html.twig'.
+ #}
+<link rel="stylesheet" href="{{ asset('bundles/acmeeverythingphparray/css/acme-everything-php-array.css') }}">
+<section class="acme-everything-php-array-hello" {{ stimulus_controller('acme/everything-php-array-bundle/hello') }}>
+    <h1 class="acme-everything-php-array-hello__title">{% block title %}{{ 'Welcome!'|trans({}, 'AcmeEverythingPhpArray') }}{% endblock %}</h1>
+    <p class="acme-everything-php-array-hello__greeting">{{ greeting }}</p>
+    <button type="button" class="acme-everything-php-array-hello__close" {{ stimulus_action('acme/everything-php-array-bundle/hello', 'close') }}>{{ 'Close'|trans({}, 'AcmeEverythingPhpArray') }}</button>
+</section>

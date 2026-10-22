@@ -33,11 +33,18 @@ final class Scenarios
 
     private const QUALITY_ASSURANCE = ['phpstan', 'cs-fixer', 'rector', 'ci'];
 
+    private const WEB = ['controllers', 'twig', 'translations', 'public-assets', 'ux'];
+
+    private const BACKEND = ['command', 'event-listener', 'doctrine'];
+
     /**
      * @return array<string, Scenario>
      */
     public static function all(): array
     {
+        // every built-in feature, like BUNDLE_FLEX_ALL=1 (the test-only kitchen-sink feature is not built in)
+        $everything = array_keys(iterator_to_array(FeatureRegistry::createDefault()));
+
         $scenarios = [
             // the bundle generated with the default answers
             new Scenario('default', 'acme/blog-bundle', ConfigFormat::Php, ['config', ...self::QUALITY_ASSURANCE]),
@@ -48,6 +55,26 @@ final class Scenarios
             // the quality assurance features, alone and on top of the core files
             new Scenario('ci', 'acme/ci-bundle', features: ['ci']),
             new Scenario('quality-assurance', 'acme/quality-assurance-bundle', features: self::QUALITY_ASSURANCE),
+            // the web features, each alone, then together in each configuration format
+            new Scenario('controllers', 'acme/controllers-bundle', features: ['controllers']),
+            new Scenario('twig', 'acme/twig-bundle', ConfigFormat::PhpArray, ['twig']),
+            new Scenario('translations', 'acme/translations-bundle', ConfigFormat::Yaml, ['translations']),
+            new Scenario('public-assets', 'acme/public-assets-bundle', features: ['public-assets']),
+            new Scenario('ux', 'acme/ux-bundle', ConfigFormat::PhpArray, ['ux']),
+            new Scenario('web-php', 'acme/web-php-bundle', ConfigFormat::Php, ['config', ...self::WEB, ...self::QUALITY_ASSURANCE]),
+            new Scenario('web-php-array', 'acme/web-php-array-bundle', ConfigFormat::PhpArray, ['config', ...self::WEB, ...self::QUALITY_ASSURANCE]),
+            new Scenario('web-yaml', 'my-vendor/web-yaml-bundle', ConfigFormat::Yaml, [...self::WEB, ...self::QUALITY_ASSURANCE], License::Proprietary),
+            // the backend features, alone, then together with the quality assurance features in each configuration format
+            new Scenario('command', 'acme/command-bundle', features: ['command']),
+            new Scenario('event-listener', 'acme/event-listener-bundle', features: ['event-listener']),
+            new Scenario('doctrine', 'acme/doctrine-entity-bundle', features: ['doctrine']),
+            new Scenario('backend-php', 'acme/backend-php-bundle', ConfigFormat::Php, ['config', ...self::BACKEND, ...self::QUALITY_ASSURANCE]),
+            new Scenario('backend-php-array', 'acme/backend-php-array-bundle', ConfigFormat::PhpArray, ['config', ...self::BACKEND, ...self::QUALITY_ASSURANCE]),
+            new Scenario('backend-yaml', 'acme/backend-yaml-bundle', ConfigFormat::Yaml, ['config', ...self::BACKEND, ...self::QUALITY_ASSURANCE]),
+            // every built-in feature together (BUNDLE_FLEX_ALL=1), in each configuration format
+            new Scenario('everything-php', 'acme/everything-php-bundle', ConfigFormat::Php, $everything),
+            new Scenario('everything-php-array', 'acme/everything-php-array-bundle', ConfigFormat::PhpArray, $everything),
+            new Scenario('everything-yaml', 'my-vendor/everything-yaml-bundle', ConfigFormat::Yaml, $everything),
             // every contribution point, in each configuration format
             new Scenario('kitchen-sink-php', 'acme/php-kitchen-sink-bundle', ConfigFormat::Php, ['config', 'kitchen-sink', ...self::QUALITY_ASSURANCE]),
             new Scenario('kitchen-sink-php-array', 'acme/php-array-kitchen-sink-bundle', ConfigFormat::PhpArray, ['config', 'kitchen-sink', ...self::QUALITY_ASSURANCE]),

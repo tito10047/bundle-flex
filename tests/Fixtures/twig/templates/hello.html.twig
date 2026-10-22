@@ -1,0 +1,14 @@
+{#
+ # Greets people: render it in your templates with {{ include('@AcmeTwig/hello.html.twig', {greeting: 'Hello Jane!'}) }}.
+ #
+ # Variables:
+ #   greeting  string  the greeting, e.g. "Hello Jane!"
+ #
+ # It extends no layout, so applications can display it anywhere. Override it in the
+ # templates/bundles/AcmeTwigBundle/hello.html.twig file of your application,
+ # or only its "title" block by extending '@!AcmeTwig/hello.html.twig'.
+ #}
+<section class="acme-twig-hello">
+    <h1 class="acme-twig-hello__title">{% block title %}Welcome!{% endblock %}</h1>
+    <p class="acme-twig-hello__greeting">{{ greeting }}</p>
+</section>
