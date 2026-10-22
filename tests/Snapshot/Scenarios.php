@@ -27,6 +27,9 @@ use Yceruto\BundleFlex\Tests\Support\KitchenSinkFeature;
  */
 final class Scenarios
 {
+    /** Year of the copyright notices, fixed so the snapshots do not change every year. */
+    public const YEAR = 2026;
+
     /**
      * @return array<string, Scenario>
      */
@@ -64,6 +67,6 @@ final class Scenarios
 
     public static function createGenerator(FeatureRegistry $features): BundleGenerator
     {
-        return new BundleGenerator(CoreContributors::createDefault(), $features, new TemplateRenderer([\dirname(__DIR__, 2).'/templates', KitchenSinkFeature::TEMPLATE_DIR]));
+        return new BundleGenerator(CoreContributors::createDefault(self::YEAR), $features, new TemplateRenderer([\dirname(__DIR__, 2).'/templates', KitchenSinkFeature::TEMPLATE_DIR]));
     }
 }

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Yceruto\BundleFlex\Contributor;
 
 use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
+use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
 
 /**
@@ -32,11 +33,15 @@ final class CoreContributors implements \IteratorAggregate
         $this->contributors = array_values($contributors);
     }
 
-    public static function createDefault(): self
+    /**
+     * @param int|null $year year of the copyright notice of the LICENSE file, the current year by default
+     */
+    public static function createDefault(?int $year = null): self
     {
         return new self(
             new PackageContributor(),
             new BundleClassContributor(),
+            new LicenseContributor($year ?? (int) date('Y')),
         );
     }
 

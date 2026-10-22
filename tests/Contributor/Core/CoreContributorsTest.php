@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Yceruto\BundleFlex\Blueprint\BundleBlueprint;
 use Yceruto\BundleFlex\Blueprint\FileTemplate;
 use Yceruto\BundleFlex\Contributor\Core\BundleClassContributor;
+use Yceruto\BundleFlex\Contributor\Core\LicenseContributor;
 use Yceruto\BundleFlex\Contributor\Core\PackageContributor;
 use Yceruto\BundleFlex\Contributor\CoreContributors;
 use Yceruto\BundleFlex\Options\ConfigFormat;
@@ -26,11 +27,20 @@ final class CoreContributorsTest extends TestCase
 {
     public function testDefaultContributors(): void
     {
-        $contributors = iterator_to_array(CoreContributors::createDefault());
+        $contributors = iterator_to_array(CoreContributors::createDefault(2030));
 
-        self::assertCount(2, $contributors);
-        self::assertInstanceOf(PackageContributor::class, $contributors[0]);
-        self::assertInstanceOf(BundleClassContributor::class, $contributors[1]);
+        self::assertSame([
+            PackageContributor::class,
+            BundleClassContributor::class,
+            LicenseContributor::class,
+        ], array_map(static fn (object $contributor): string => $contributor::class, $contributors));
+
+        self::assertSame(['year' => 2030], self::renderLicenseParameters(CoreContributors::createDefault(2030)));
+    }
+
+    public function testDefaultLicenseYearIsTheCurrentYear(): void
+    {
+        self::assertSame(['year' => (int) date('Y')], self::renderLicenseParameters(CoreContributors::createDefault()));
     }
 
     public function testPackageContributor(): void
@@ -62,5 +72,20 @@ final class CoreContributorsTest extends TestCase
         (new BundleClassContributor())->contribute($blueprint);
 
         self::assertEquals(['src/MyVendorFooBundle.php' => new FileTemplate('core/src/Bundle.php.tpl', 'src/MyVendorFooBundle.php')], $blueprint->getFiles());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function renderLicenseParameters(CoreContributors $contributors): array
+    {
+        $blueprint = new BundleBlueprint(OptionsFactory::create());
+        foreach ($contributors as $contributor) {
+            if ($contributor instanceof LicenseContributor) {
+                $contributor->contribute($blueprint);
+            }
+        }
+
+        return $blueprint->getFiles()['LICENSE']->parameters;
     }
 }
