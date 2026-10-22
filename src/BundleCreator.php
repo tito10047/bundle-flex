@@ -122,8 +122,8 @@ final class BundleCreator
         $steps = ['cd '.basename($this->bundleDir)];
         if ([] !== $blueprint->composer->getQaScriptNames()) {
             $steps[] = 'composer '.ComposerManifest::QA_SCRIPT;
-        } elseif (isset($blueprint->composer->getScripts()['test'])) {
-            $steps[] = 'composer test';
+        } elseif ($blueprint->composer->hasScript(ComposerManifest::TEST_SCRIPT)) {
+            $steps[] = 'composer '.ComposerManifest::TEST_SCRIPT;
         }
         $steps[] = 'git init && git add -A && git commit -m "Initial commit"';
         $steps[] = 'Push it to GitHub and submit it to Packagist: https://packagist.org/packages/submit';

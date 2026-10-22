@@ -50,6 +50,21 @@ final class BundleBlueprintTest extends TestCase
         ], $blueprint->getFiles());
     }
 
+    public function testTellsWhetherADirectoryHasFiles(): void
+    {
+        $blueprint = new BundleBlueprint(OptionsFactory::create());
+        $blueprint->addFile('a.tpl', 'tests/Integration/BundleTest.php');
+        $blueprint->addFile('b.tpl', 'templates.md');
+
+        self::assertTrue($blueprint->hasDirectory('tests'));
+        self::assertTrue($blueprint->hasDirectory('tests/'));
+        self::assertTrue($blueprint->hasDirectory('/tests/Integration'));
+        self::assertFalse($blueprint->hasDirectory('templates'));
+        self::assertFalse($blueprint->hasDirectory('tests/Unit'));
+        // derived from the blueprint, not contributed
+        self::assertFalse($blueprint->hasDirectory('config'));
+    }
+
     public function testRejectsDuplicateDestinations(): void
     {
         $blueprint = new BundleBlueprint(OptionsFactory::create());

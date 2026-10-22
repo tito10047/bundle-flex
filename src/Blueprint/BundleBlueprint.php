@@ -89,6 +89,24 @@ final class BundleBlueprint
     }
 
     /**
+     * Whether a contributed file is generated inside the given directory (at any depth), e.g. "tests".
+     *
+     * Files derived from the blueprint (composer.json, config/services.*, config/routes.*) are not
+     * contributed: "config" is only reported when a contributor adds a file to it.
+     */
+    public function hasDirectory(string $path): bool
+    {
+        $prefix = trim($path, '/').'/';
+        foreach ($this->files as $destination => $file) {
+            if (str_starts_with($destination, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return array<string, FileTemplate> indexed by destination
      */
     public function getFiles(): array

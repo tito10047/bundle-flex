@@ -128,6 +128,20 @@ final class ComposerManifestTest extends TestCase
         ], $manifest->getScripts());
         self::assertSame(['cs:fix'], $manifest->getScriptsAfterInstall());
         self::assertSame(['test'], $manifest->getQaScriptNames());
+        self::assertTrue($manifest->hasScript(ComposerManifest::TEST_SCRIPT));
+        self::assertTrue($manifest->hasScript('cs:fix'));
+        self::assertFalse($manifest->hasScript('cs'));
+    }
+
+    public function testExposesTheConstraintOfARequiredPackage(): void
+    {
+        $manifest = new ComposerManifest();
+        $manifest->require('symfony/config', '^7.4 || ^8.0');
+        $manifest->requireDev('phpunit/phpunit', '^11.5 || ^12.0');
+
+        self::assertSame('^7.4 || ^8.0', $manifest->getConstraint('symfony/config'));
+        self::assertSame('^11.5 || ^12.0', $manifest->getConstraint('phpunit/phpunit'));
+        self::assertNull($manifest->getConstraint('twig/twig'));
     }
 
     public function testRejectsDuplicateScripts(): void

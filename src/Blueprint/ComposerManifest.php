@@ -113,6 +113,19 @@ final class ComposerManifest
     }
 
     /**
+     * The constraint the package is required with, for runtime or for development; null when it is not required.
+     */
+    public function getConstraint(string $package): ?string
+    {
+        return $this->require[$package] ?? $this->requireDev[$package] ?? null;
+    }
+
+    public function hasScript(string $name): bool
+    {
+        return isset($this->scripts[$name]);
+    }
+
+    /**
      * @return array<string, string> sorted like Composer's "sort-packages" (platform packages first)
      */
     public function getRequire(): array
