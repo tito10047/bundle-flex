@@ -109,12 +109,16 @@ final class GreetingMappingTest extends <?= $imports->name('Symfony\Bundle\Frame
         return $entityManager;
     }
 
+    /**
+     * A container with the parameters the kernel defines before prepending the configuration of the bundles.
+     */
     private function createContainerBuilder(): <?= $imports->name('Symfony\Component\DependencyInjection\ContainerBuilder') ?>
 
     {
         return new <?= $imports->name('Symfony\Component\DependencyInjection\ContainerBuilder') ?>(new <?= $imports->name('Symfony\Component\DependencyInjection\ParameterBag\ParameterBag') ?>([
             'kernel.environment' => 'test',
             'kernel.build_dir' => sys_get_temp_dir(),
+            'kernel.bundles_metadata' => [],
         ]));
     }
 
