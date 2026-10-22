@@ -102,7 +102,7 @@ final class BundleGeneratorTest extends TestCase
         file_put_contents($dir.'/composer.json', '{"name": "yceruto/bundle-skeleton", "minimum-stability": "stable"}');
 
         try {
-            $features = ['config' => true, 'controllers' => false, 'twig' => false, 'translations' => false, 'public-assets' => false, 'ux' => false, 'phpstan' => false, 'cs-fixer' => false, 'rector' => false, 'ci' => false];
+            $features = ['config' => true, 'controllers' => false, 'twig' => false, 'translations' => false, 'command' => false, 'public-assets' => false, 'ux' => false, 'phpstan' => false, 'cs-fixer' => false, 'rector' => false, 'ci' => false];
             $blueprint = BundleGenerator::createDefault()->generate(OptionsFactory::create(features: $features), $dir);
 
             self::assertSame('acme/blog-bundle', $blueprint->naming->packageName);

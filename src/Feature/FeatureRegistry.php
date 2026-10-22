@@ -70,6 +70,7 @@ final class FeatureRegistry implements \IteratorAggregate, \Countable
             new ControllersFeature(),
             new TwigFeature(),
             new TranslationsFeature(),
+            new CommandFeature(),
             new PublicAssetsFeature(),
             new UxFeature(),
             // quality assurance, contributed last: these features adapt to everything contributed before them

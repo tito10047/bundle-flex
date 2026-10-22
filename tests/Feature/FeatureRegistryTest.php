@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Yceruto\BundleFlex\Tests\Feature;
 
 use PHPUnit\Framework\TestCase;
+use Yceruto\BundleFlex\Feature\CommandFeature;
 use Yceruto\BundleFlex\Feature\ControllersFeature;
 use Yceruto\BundleFlex\Feature\FeatureGroup;
 use Yceruto\BundleFlex\Feature\FeatureInterface;
@@ -94,6 +95,7 @@ final class FeatureRegistryTest extends TestCase
         $registry = FeatureRegistry::createDefault();
 
         self::assertInstanceOf(SemanticConfigFeature::class, $registry->get(SemanticConfigFeature::NAME));
+        self::assertInstanceOf(CommandFeature::class, $registry->get(CommandFeature::NAME));
         // features depending on the answers of other features come after them
         $names = array_keys(iterator_to_array($registry));
         foreach ([[ControllersFeature::NAME, TwigFeature::NAME], [TwigFeature::NAME, TranslationsFeature::NAME], [TranslationsFeature::NAME, PublicAssetsFeature::NAME], [PublicAssetsFeature::NAME, UxFeature::NAME]] as [$before, $after]) {
