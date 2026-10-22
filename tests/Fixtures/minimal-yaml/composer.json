@@ -1,7 +1,7 @@
 {
     "name": "acme/minimal-yaml-bundle",
     "description": "AcmeMinimalYamlBundle for Symfony",
-    "license": "MIT",
+    "license": "proprietary",
     "type": "symfony-bundle",
     "keywords": [
         "symfony",
@@ -20,6 +20,10 @@
         "symfony/http-kernel": "^7.4 || ^8.0",
         "symfony/yaml": "^7.4 || ^8.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5 || ^12.0",
+        "symfony/framework-bundle": "^7.4 || ^8.0"
+    },
     "autoload": {
         "psr-4": {
             "Acme\\MinimalYamlBundle\\": "src/"
@@ -30,9 +34,17 @@
             "Acme\\MinimalYamlBundle\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true,
     "config": {
         "sort-packages": true
+    },
+    "scripts": {
+        "qa": [
+            "@test"
+        ],
+        "test": "phpunit"
+    },
+    "scripts-descriptions": {
+        "qa": "Runs every quality check",
+        "test": "Runs the tests (PHPUnit)"
     }
 }

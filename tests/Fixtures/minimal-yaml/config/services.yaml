@@ -3,7 +3,14 @@
 #
 # See https://symfony.com/doc/current/bundles/best_practices.html#services
 
+parameters:
+    acme_minimal_yaml.greeting: 'Hello'
+
 services:
-    # acme_minimal_yaml.some_service:
-    #     class: Acme\MinimalYamlBundle\SomeService
-    #     arguments: ['@acme_minimal_yaml.other_service']
+    acme_minimal_yaml.greeter:
+        class: Acme\MinimalYamlBundle\Greeter
+        arguments:
+            - '%acme_minimal_yaml.greeting%'
+
+    Acme\MinimalYamlBundle\GreeterInterface:
+        alias: acme_minimal_yaml.greeter

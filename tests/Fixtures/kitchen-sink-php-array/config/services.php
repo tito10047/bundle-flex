@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 use Acme\PhpArrayKitchenSinkBundle\CacheWarmer\Formatter;
 use Acme\PhpArrayKitchenSinkBundle\Controller\HelloController;
+use Acme\PhpArrayKitchenSinkBundle\Formatter\FormatterInterface;
 use Acme\PhpArrayKitchenSinkBundle\Greeter;
 use Acme\PhpArrayKitchenSinkBundle\GreeterInterface;
-
-use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+use Acme\PhpArrayKitchenSinkBundle\KitchenSink;
 
 /*
  * Services are defined explicitly: no autowiring, no autoconfiguration, private by default,
@@ -20,7 +19,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
  */
 return [
     'parameters' => [
-        'acme_php_array_kitchen_sink.greeting' => 'Hello %%name%%',
+        'acme_php_array_kitchen_sink.kitchen_sink.greeting' => 'Hello %%name%%',
         'acme_php_array_kitchen_sink.channels' => ['email', '@@sms', 'it\'s'],
         'acme_php_array_kitchen_sink.enabled' => true,
     ],
@@ -28,8 +27,14 @@ return [
         'acme_php_array_kitchen_sink.greeter' => [
             'class' => Greeter::class,
             'arguments' => [
-                param('acme_php_array_kitchen_sink.greeting'),
-                service('acme_php_array_kitchen_sink.formatter'),
+                '%acme_php_array_kitchen_sink.greeting%',
+            ],
+        ],
+        'acme_php_array_kitchen_sink.kitchen_sink' => [
+            'class' => KitchenSink::class,
+            'arguments' => [
+                '%acme_php_array_kitchen_sink.kitchen_sink.greeting%',
+                '@acme_php_array_kitchen_sink.formatter',
                 '@@literal 100%%',
                 42,
                 1.5,
@@ -44,7 +49,7 @@ return [
         '.acme_php_array_kitchen_sink.cache_warmer' => [
             'class' => Formatter::class,
             'arguments' => [
-                service('acme_php_array_kitchen_sink.formatter'),
+                '@acme_php_array_kitchen_sink.formatter',
             ],
             'tags' => [
                 ['name' => 'kernel.cache_warmer', 'priority' => 10],
@@ -53,7 +58,7 @@ return [
         'acme_php_array_kitchen_sink.controller.hello' => [
             'class' => HelloController::class,
             'arguments' => [
-                service('acme_php_array_kitchen_sink.greeter'),
+                '@acme_php_array_kitchen_sink.greeter',
             ],
             'tags' => [
                 ['name' => 'controller.service_arguments'],
@@ -62,6 +67,9 @@ return [
         ],
         GreeterInterface::class => [
             'alias' => 'acme_php_array_kitchen_sink.greeter',
+        ],
+        FormatterInterface::class => [
+            'alias' => 'acme_php_array_kitchen_sink.formatter',
         ],
         'acme_php_array_kitchen_sink.default_greeter' => [
             'alias' => 'acme_php_array_kitchen_sink.greeter',

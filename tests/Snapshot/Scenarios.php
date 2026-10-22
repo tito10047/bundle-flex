@@ -18,6 +18,7 @@ use Yceruto\BundleFlex\Feature\FeatureGroup;
 use Yceruto\BundleFlex\Feature\FeatureRegistry;
 use Yceruto\BundleFlex\Generator\BundleGenerator;
 use Yceruto\BundleFlex\Options\ConfigFormat;
+use Yceruto\BundleFlex\Options\License;
 use Yceruto\BundleFlex\Template\TemplateRenderer;
 use Yceruto\BundleFlex\Tests\Support\KitchenSinkFeature;
 
@@ -38,10 +39,12 @@ final class Scenarios
     public static function all(): array
     {
         $scenarios = [
+            // the bundle generated with the default answers
+            new Scenario('default', 'acme/blog-bundle', ConfigFormat::Php, ['config', ...self::QUALITY_ASSURANCE]),
             // nothing but the core files, in each configuration format
             new Scenario('minimal', 'acme/minimal-bundle'),
             new Scenario('minimal-php-array', 'acme/minimal-php-array-bundle', ConfigFormat::PhpArray),
-            new Scenario('minimal-yaml', 'acme/minimal-yaml-bundle', ConfigFormat::Yaml),
+            new Scenario('minimal-yaml', 'acme/minimal-yaml-bundle', ConfigFormat::Yaml, license: License::Proprietary),
             // the quality assurance features, alone and on top of the core files
             new Scenario('ci', 'acme/ci-bundle', features: ['ci']),
             new Scenario('quality-assurance', 'acme/quality-assurance-bundle', features: self::QUALITY_ASSURANCE),
