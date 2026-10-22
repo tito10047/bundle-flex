@@ -22,6 +22,7 @@
     "require-dev": {
         "composer/composer": "^2.6",
         "friendsofphp/php-cs-fixer": "^3.92",
+        "marc-mabe/php-enum": "^4.4",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
