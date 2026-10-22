@@ -1,23 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the yceruto/bundle-flex package.
+ *
+ * (c) Yonel Ceruto <yonelceruto@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Yceruto\BundleFlex;
 
 use Composer\Composer;
-use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
+use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
-use Yceruto\BundleFlex\Composer\CommandRunner;
-use Yceruto\BundleFlex\Maker\FlexMaker;
 
-class Flex implements PluginInterface, EventSubscriberInterface
+/**
+ * Composer plugin entry point: turns the skeleton into a bundle right after "composer create-project".
+ */
+final class Flex implements PluginInterface, EventSubscriberInterface
 {
-    private CommandRunner $commandRunner;
-    private FlexMaker $maker;
-    private IOInterface $io;
-
     public static function getSubscribedEvents(): array
     {
         return [
@@ -27,44 +35,23 @@ class Flex implements PluginInterface, EventSubscriberInterface
 
     public function activate(Composer $composer, IOInterface $io): void
     {
-        $this->commandRunner = new CommandRunner($composer);
-        $this->maker = new FlexMaker($this->commandRunner, $io, \dirname(Factory::getComposerFile()));
-        $this->io = $io;
     }
 
     public function deactivate(Composer $composer, IOInterface $io): void
     {
-        // no-op
     }
 
     public function uninstall(Composer $composer, IOInterface $io): void
     {
-        // no-op
     }
 
     public function onPostCreateProject(Event $event): void
     {
-        $this->removeSkeletonFiles();
-        $this->maker->make();
-        $this->commandRunner->remove('yceruto/bundle-flex', dev: true);
-        $this->writeSuccessMessage();
-    }
+        $composerFile = realpath(Factory::getComposerFile());
+        if (false === $composerFile) {
+            throw new \RuntimeException(\sprintf('Unable to locate "%s".', Factory::getComposerFile()));
+        }
 
-    private function removeSkeletonFiles(): void
-    {
-        @unlink('LICENSE');
-        @unlink('README.md');
-    }
-
-    private function writeSuccessMessage(): void
-    {
-        $message = <<<EOT
-
-<bg=green;fg=white>                                                                    </>
-<bg=green;fg=white> ✨ Your bundle is all set to rock the Symfony world! Happy coding! </>
-<bg=green;fg=white>                                                                    </>
-
-EOT;
-        $this->io->write($message);
+        BundleCreator::createDefault($event->getIO(), \dirname($composerFile))->run();
     }
 }

@@ -1,0 +1,25 @@
+<?php
+/**
+ * @var Yceruto\BundleFlex\Blueprint\BundleBlueprint $blueprint
+ * @var Yceruto\BundleFlex\Naming\BundleNaming       $naming
+ * @var Yceruto\BundleFlex\Template\TemplateHelper   $helper
+ */
+?>
+# Import these routes in the application with:
+#
+#     <?= $naming->alias ?>:
+#         resource: '@<?= $naming->className ?>/config/routes.yaml'
+#
+# See https://symfony.com/doc/current/bundles/best_practices.html#routing
+<?php foreach ($blueprint->routes->getRoutes() as $route): ?>
+
+<?= $helper->yamlKey($route->name) ?>:
+    path: <?= $helper->yaml($route->path) ?>
+
+    controller: <?= $helper->yaml($route->controller) ?>
+
+<?php if ([] !== $route->methods): ?>
+    methods: <?= $helper->yaml($route->methods) ?>
+
+<?php endif ?>
+<?php endforeach ?>

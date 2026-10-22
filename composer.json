@@ -17,8 +17,7 @@
     ],
     "require": {
         "php": ">=8.2",
-        "composer-plugin-api": "^2.6",
-        "nikic/php-parser": "^5.0"
+        "composer-plugin-api": "^2.6"
     },
     "require-dev": {
         "composer/composer": "^2.6",
