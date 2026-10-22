@@ -1,0 +1,37 @@
+{
+    "name": "acme/minimal-bundle",
+    "description": "AcmeMinimalBundle for Symfony",
+    "license": "MIT",
+    "type": "symfony-bundle",
+    "keywords": [
+        "symfony",
+        "symfony-bundle"
+    ],
+    "authors": [
+        {
+            "name": "Jane Doe",
+            "email": "jane@example.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "symfony/config": "^7.4 || ^8.0",
+        "symfony/dependency-injection": "^7.4 || ^8.0",
+        "symfony/http-kernel": "^7.4 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Acme\\MinimalBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Acme\\MinimalBundle\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}

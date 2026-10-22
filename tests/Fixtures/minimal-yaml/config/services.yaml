@@ -1,0 +1,9 @@
+# Services are defined explicitly: no autowiring, no autoconfiguration, private by default,
+# with ids prefixed by "acme_minimal_yaml." and aliases for autowiring.
+#
+# See https://symfony.com/doc/current/bundles/best_practices.html#services
+
+services:
+    # acme_minimal_yaml.some_service:
+    #     class: Acme\MinimalYamlBundle\SomeService
+    #     arguments: ['@acme_minimal_yaml.other_service']

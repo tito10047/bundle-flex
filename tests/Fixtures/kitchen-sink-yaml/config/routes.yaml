@@ -1,0 +1,15 @@
+# Import these routes in the application with:
+#
+#     my_vendor_yaml_kitchen_sink:
+#         resource: '@MyVendorYamlKitchenSinkBundle/config/routes.yaml'
+#
+# See https://symfony.com/doc/current/bundles/best_practices.html#routing
+
+my_vendor_yaml_kitchen_sink_hello:
+    path: '/hello/{name}'
+    controller: 'my_vendor_yaml_kitchen_sink.controller.hello'
+    methods: ['GET', 'HEAD']
+
+my_vendor_yaml_kitchen_sink_home:
+    path: '/'
+    controller: 'my_vendor_yaml_kitchen_sink.controller.hello'
